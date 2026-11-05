@@ -1,0 +1,44 @@
+import xml.etree.ElementTree as ET
+from datetime import date, datetime, timedelta, timezone
+
+import build
+
+
+def test_normalize_url_strips_tracking():
+    assert build.normalize_url("https://Example.com/a?utm_source=x&id=1&ref=hn#top") == "https://example.com/a?id=1"
+
+
+def test_opml_parses():
+    feeds = build.read_opml(build.ROOT / "feeds.opml")
+    assert feeds and all(url.startswith("https://") for _, url in feeds)
+
+
+def test_candidates_filters_and_caps():
+    now = datetime.now(timezone.utc)
+    t = lambda d: (now - timedelta(days=d)).timetuple()
+    entries = [{"link": f"https://x.test/{n}?utm_medium=rss", "title": f"T{n}", "published_parsed": t(0)} for n in range(15)]
+    entries += [
+        {"link": "https://x.test/old", "title": "old", "published_parsed": t(10)},
+        {"link": "https://x.test/undated", "title": "undated"},
+        {"link": "javascript:alert(1)", "title": "xss", "published_parsed": t(0)},
+        {"link": "https://x.test/seen", "title": "seen", "published_parsed": t(0)},
+    ]
+    out = build.candidates("X", entries, {"https://x.test/seen": "2026-01-01"}, now - timedelta(days=3))
+    urls = {c["url"] for c in out}
+    assert len(out) == build.PER_FEED
+    assert not urls & {"https://x.test/old", "https://x.test/undated", "javascript:alert(1)", "https://x.test/seen"}
+    assert all("utm_" not in u for u in urls)
+
+
+def test_feed_health_reports_only_long_failures():
+    today = date(2026, 11, 20)
+    health = {"https://a": "2026-11-01", "https://b": "2026-11-19", "https://c": "2026-10-01"}
+    dead = build.update_feed_health(health, {"https://a": False, "https://b": False, "https://c": True, "https://d": False}, today)
+    assert dead == ["https://a"]
+    assert "https://c" not in health and health["https://d"] == "2026-11-20"
+
+
+def test_rss_is_well_formed():
+    xml = build.rss([{"date": "2026-11-05", "title": "A & B <c>", "url": "https://x.test/?a=1&b=2",
+                      "category": "ai", "summary": "s"}])
+    assert ET.fromstring(xml).find("channel/item/title").text == "A & B <c>"

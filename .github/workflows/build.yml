@@ -1,0 +1,55 @@
+# Fetches feeds, summarizes new items with Ollama Cloud, and commits site/data.json.
+# Cloudflare Pages deploys site/ on every push to main.
+# Secrets: OLLAMA_API_KEY.
+name: Build
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q
+
+      - if: github.event_name != 'pull_request'
+        run: python build.py
+        env:
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+
+      - name: Commit data
+        if: github.event_name != 'pull_request'
+        run: |
+          git add site/data.json site/rss.xml state.json
+          git diff --cached --quiet && exit 0
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "chore(data): update news"
+          git push
+
+      - name: Report dead feeds
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -s dead-feeds.txt ] || exit 0
+          body=$(printf 'These feeds have failed every fetch for 14+ days. Fix or remove them from `feeds.opml`:\n\n'; sed 's/^/- /' dead-feeds.txt)
+          issue=$(gh issue list --state open --search 'in:title "Dead feeds"' --json number --jq '.[0].number')
+          if [ -n "$issue" ]; then gh issue edit "$issue" --body "$body"; else gh issue create --title "Dead feeds" --body "$body"; fi
