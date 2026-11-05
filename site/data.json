@@ -11,38 +11,11 @@
   },
   {
    "date": "2026-11-05",
-   "title": "Alpine Linux Security Advisory: OpenSSH-server password authentication bypass",
-   "url": "https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/",
-   "publisher": "Hacker News 300+",
-   "category": "security",
-   "summary": "Alpine Linux published a security advisory for an OpenSSH server password authentication bypass vulnerability.",
-   "relevance": 5
-  },
-  {
-   "date": "2026-11-05",
-   "title": "AI Agents Got Root on Linux via 948 Kernel Flaws in OpenAI Research",
-   "url": "https://www.securityweek.com/ai-agents-got-root-on-linux-via-948-kernel-flaws-in-openai-research/",
-   "publisher": "SecurityWeek",
-   "category": "ai",
-   "summary": "An unreleased OpenAI cyber model found and exploited 948 Linux kernel privilege-escalation bugs for about $1.2 million.",
-   "relevance": 5
-  },
-  {
-   "date": "2026-11-05",
    "title": "GitHub to Block pull_request_target Workflows by Default Starting December 2",
    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
    "publisher": "Socket",
    "category": "sdlc",
    "summary": "GitHub will block pull_request_target workflows by default starting December 2 as an Actions security hardening measure.",
-   "relevance": 5
-  },
-  {
-   "date": "2026-11-05",
-   "title": "OpenSSH Issues Emergency Fix for Flaw Letting Long Passwords Bypass SSH Auth on Alpine Linux",
-   "url": "https://thehackernews.com/2026/11/openssh-issues-emergency-fix-for-flaw.html",
-   "publisher": "The Hacker News",
-   "category": "security",
-   "summary": "OpenSSH released 10.6p2 to fix a critical flaw letting 257-1024 byte passwords bypass SSH auth on some Alpine Linux servers; Alpine issued fixed packages.",
    "relevance": 5
   },
   {
@@ -335,29 +308,11 @@
   },
   {
    "date": "2026-10-31",
-   "title": "Inside a malicious Claude Code-branded extension and its persistent SSH backdoor",
-   "url": "https://www.microsoft.com/en-us/security/blog/2026/10/30/inside-malicious-claude-code-branded-cursor-extension-persistent-ssh-backdoor/",
-   "publisher": "Microsoft Security Blog",
-   "category": "security",
-   "summary": "Microsoft documents a malicious Claude Code-branded extension that installs a persistent SSH backdoor, with detection and remediation guidance.",
-   "relevance": 3
-  },
-  {
-   "date": "2026-10-31",
    "title": "How We Took Over ChatGPT Accounts",
    "url": "https://simonwillison.net/2026/Oct/31/how-we-took-over-chatgpt-accounts/",
    "publisher": "Simon Willison",
    "category": "security",
    "summary": "Parameter Labs documented a complex exploit chain that took over ChatGPT accounts via the sandboxed HTML preview artifacts feature.",
-   "relevance": 3
-  },
-  {
-   "date": "2026-10-31",
-   "title": "A Shared ChatGPT Link Could Run Attacker Code in Your Session and Read Private Chats",
-   "url": "https://thehackernews.com/2026/10/a-shared-chatgpt-link-could-run.html",
-   "publisher": "The Hacker News",
-   "category": "security",
-   "summary": "Researchers found a malicious ChatGPT share link could execute attacker code in a logged-in session and read private chats; OpenAI fixed it in eight days.",
    "relevance": 3
   },
   {
@@ -506,15 +461,6 @@
   },
   {
    "date": "2026-10-28",
-   "title": "Octoverse: Commits, pushes, reach new highs in 2026 as developers build with agents",
-   "url": "https://github.blog/news-insights/octoverse/octoverse-commits-pushes-reach-new-highs-in-2026-as-developers-build-with-agents/",
-   "publisher": "The GitHub Blog",
-   "category": "sdlc",
-   "summary": "GitHub's 2026 Octoverse report shows record commits and pushes as developers build with agents.",
-   "relevance": 4
-  },
-  {
-   "date": "2026-10-28",
    "title": "Volcano v1.16 Released: NamespaceQueue, fairshare, and a broader HyperNode ecosystem",
    "url": "https://www.cncf.io/blog/2026/10/28/volcano-v1-16-released-namespacequeue-fairshare-and-a-broader-hypernode-ecosystem/",
    "publisher": "CNCF",
@@ -605,29 +551,11 @@
   },
   {
    "date": "2026-10-26",
-   "title": "AI, Scripts, Operator: Inside the ConnectWise Attack",
-   "url": "https://www.huntress.com/blog/connectwise-attack-ai",
-   "publisher": "Huntress",
-   "category": "security",
-   "summary": "Huntress telemetry on the ConnectWise attack is consistent with an AI agent steering scripted tooling under operator control.",
-   "relevance": 4
-  },
-  {
-   "date": "2026-10-26",
    "title": "Introducing GPT-6.1 Terra",
    "url": "https://openai.com/index/introducing-gpt-6-1-terra",
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI released GPT-6.1 Terra, a model for fast computer use at scale.",
-   "relevance": 4
-  },
-  {
-   "date": "2026-10-26",
-   "title": "GPT-6.1 Terra",
-   "url": "https://simonwillison.net/2026/Oct/26/gpt-61-terra/",
-   "publisher": "Simon Willison",
-   "category": "ai",
-   "summary": "OpenAI released GPT-6.1 Terra, a faster model emphasizing visual reasoning and computer use, positioned above GPT-5.6 Terra.",
    "relevance": 4
   },
   {
@@ -655,15 +583,6 @@
    "publisher": "Socket",
    "category": "security",
    "summary": "Socket Threat Intel now shows which malware campaigns were blocked or detected in an organization, linking to scans and Firewall events.",
-   "relevance": 3
-  },
-  {
-   "date": "2026-10-26",
-   "title": "eMudhra, Brotli, and the Long Tail of a Security Fix",
-   "url": "https://socket.dev/blog/emudhra-brotli-security-fix",
-   "publisher": "Socket",
-   "category": "security",
-   "summary": "Fixes for eMudhra and Brotli are released, but full remediation requires tracking bundled libraries, runtimes and certificate stores.",
    "relevance": 3
   },
   {
@@ -790,15 +709,6 @@
    "publisher": "Huntress",
    "category": "security",
    "summary": "Two critical PHP remote code execution vulnerabilities, CVE-2026-109618 and CVE-2026-109619, leaked before patches were available.",
-   "relevance": 5
-  },
-  {
-   "date": "2026-10-21",
-   "title": "PHP2Shell: PHP RCE (CVE-2026-109618, CVE-2026-109619)",
-   "url": "https://sansec.io/research/php2shell",
-   "publisher": "Sansec",
-   "category": "security",
-   "summary": "Two PHP engine vulnerabilities rated CVSS 9.2 enable remote code execution, affecting Magento, Shopware and WooCommerce stores regardless of their own code.",
    "relevance": 5
   },
   {
@@ -1037,24 +947,6 @@
   },
   {
    "date": "2026-10-13",
-   "title": "Developing Gemini 4 Argon responsibly and safely",
-   "url": "https://deepmind.google/blog/developing-gemini-4-argon-responsibly-and-safely/",
-   "publisher": "Google DeepMind",
-   "category": "ai",
-   "summary": "Google DeepMind published its responsible and safe development approach for Gemini 4 Argon.",
-   "relevance": 3
-  },
-  {
-   "date": "2026-10-13",
-   "title": "Gemini 4 Argon for Robotics",
-   "url": "https://deepmind.google/blog/gemini-4-argon-for-robotics/",
-   "publisher": "Google DeepMind",
-   "category": "ai",
-   "summary": "Google DeepMind released Gemini 4 Argon for Robotics.",
-   "relevance": 3
-  },
-  {
-   "date": "2026-10-13",
    "title": "Run fast, private agents on-device with LFM2.5-24B-A2B",
    "url": "https://huggingface.co/blog/LiquidAI/lfm25-24b-a2b",
    "publisher": "Hugging Face",
@@ -1230,10 +1122,6 @@
   "window_end": "2026-11-05",
   "selected_on": "",
   "items": [
-   {
-    "url": "https://thehackernews.com/2026/11/openssh-issues-emergency-fix-for-flaw.html",
-    "why": "Critical OpenSSH auth bypass on Alpine/musl servers; patch to 10.6p2 immediately if you run Alpine."
-   },
    {
     "url": "https://socket.dev/blog/github-to-block-pull-request-target",
     "why": "GitHub blocks pull_request_target workflows by default Dec 2; audit CI pipelines now to avoid breakage."
