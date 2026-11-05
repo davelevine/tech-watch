@@ -25,6 +25,7 @@ KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
 FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries published longer ago than this
 PER_FEED = int(os.environ.get("PER_FEED", 10))     # newest N entries per feed per run (caps huge feeds)
 MIN_RELEVANCE = 3     # 1-5; below this the item is dropped
+DAILY_MAX = 8         # keep at most the N most relevant items per day (~5/day on average)
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20
 UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
@@ -184,6 +185,15 @@ def rss(items):
             f"{entries}</channel></rss>\n")
 
 
+def cap_per_day(items):
+    """Newest day first; within a day, the DAILY_MAX most relevant (ties keep their order)."""
+    by_day = {}
+    for i in items:
+        by_day.setdefault(i["date"], []).append(i)
+    return [i for day in sorted(by_day, reverse=True)
+            for i in sorted(by_day[day], key=lambda i: -i.get("relevance", MIN_RELEVANCE))[:DAILY_MAX]]
+
+
 def update_feed_health(health, results, today):
     """health: {feed_url: first_failure_date}. Returns feeds dead for DEAD_AFTER_DAYS+."""
     for url, ok in results.items():
@@ -242,10 +252,10 @@ def main():
             seen[item["url"]] = item["date"]
             if r["relevance"] >= MIN_RELEVANCE:
                 data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
-                                     | {"category": r["category"], "summary": r["summary"]})
+                                     | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"]})
 
     keep = (today - timedelta(days=KEEP_DAYS)).isoformat()
-    data["items"] = sorted((i for i in data["items"] if i["date"] >= keep), key=lambda i: i["date"], reverse=True)
+    data["items"] = cap_per_day([i for i in data["items"] if i["date"] >= keep])
     state["seen"] = {u: d for u, d in seen.items() if d >= keep}
 
     weekly = data.get("weekly")
