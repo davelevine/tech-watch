@@ -6,7 +6,8 @@
 <title>Tech Watch · AI, architecture and security news</title>
 <meta name="description" content="Daily tech news on AI, security, architecture, SDLC and regulation, summarized.">
 <link rel="alternate" type="application/rss+xml" title="Tech Watch" href="/rss.xml">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0b0d'/><circle cx='16' cy='16' r='6' fill='%2373dbcc'/></svg>">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 <style>
   :root {
@@ -100,6 +101,10 @@
   .card-arrow { flex-shrink: 0; margin-top: 2px; color: var(--text-muted); transition: transform .15s, color .15s; }
   .card-arrow svg { width: 16px; height: 16px; }
   mark { background: var(--accent-soft); color: inherit; border-radius: 2px; }
+  .back-to-top { position: fixed; right: 24px; bottom: 24px; z-index: 90; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--accent);
+    border-radius: 999px; background: var(--bg-card); color: var(--accent); cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .2); }
+  .back-to-top[hidden] { display: none; }
+  .back-to-top svg { width: 18px; height: 18px; }
   .empty { padding: 60px 24px; color: var(--text-muted); text-align: center; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (hover: hover) {
@@ -121,6 +126,7 @@
     .weekly-card { flex-basis: min(82vw, 300px); }
     .card { padding: 12px; gap: 10px; }
     .card-title { font-size: .875rem; }
+    .back-to-top { right: 12px; bottom: 12px; }
   }
 </style>
 </head>
@@ -161,6 +167,8 @@
   <div class="rail" id="rail"></div>
 </section>
 <main class="items" id="items"><p class="empty">Loading articles…</p></main>
+<div id="sentinel"></div>
+<button class="back-to-top" id="top" type="button" aria-label="Back to top" hidden><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script>
 const CATS = { security: 'Security', ai: 'AI', architecture: 'Architecture', sdlc: 'SDLC', regulation: 'Regulation', other: 'Other' };
 const SHORT = { architecture: 'Arch' };
@@ -170,14 +178,16 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const cat = c => (c in CATS ? c : 'other');
 const domain = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
-let items = [], filter = 'all';
+const PAGE = 40;
+const io = new IntersectionObserver(([e]) => { if (e.isIntersecting && limit < shown.length) { limit += PAGE; renderPage(); } }, { rootMargin: '800px' });
+let items = [], filter = 'all', shown = [], limit = PAGE;
 
 function dayLabel(iso) {
   const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(iso + 'T00:00:00')) / 864e5);
   if (days <= 0) return 'Today';
   if (days === 1) return 'Yesterday';
   const d = new Date(iso + 'T12:00:00');
-  return days < 7 ? d.toLocaleDateString('en-US', { weekday: 'long' }) : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  return days < 7 ? d.toLocaleDateString('en-US', { weekday: 'long' }) : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function highlight(text, q) {
@@ -191,20 +201,27 @@ function renderFilters() {
   const counts = {};
   for (const i of items) counts[cat(i.category)] = (counts[cat(i.category)] || 0) + 1;
   $('filters').innerHTML = [`<button class="filter-btn${filter === 'all' ? ' active' : ''}" data-f="all">All</button>`]
-    .concat(ORDER.filter(c => counts[c]).map(c => `<button class="filter-btn${filter === c ? ' active' : ''}" data-f="${c}">` +
-      `<span class="dot" style="--c:var(--cat-${c})"></span>${SHORT[c] || CATS[c]} (${counts[c]})</button>`)).join('');
+    .concat(ORDER.map(c => `<button class="filter-btn${filter === c ? ' active' : ''}" data-f="${c}">` +
+      `<span class="dot" style="--c:var(--cat-${c})"></span>${SHORT[c] || CATS[c]} (${counts[c] || 0})</button>`)).join('');
 }
 
 function renderItems() {
-  const q = $('search').value.trim();
-  const ql = q.toLowerCase();
-  $('search-wrap').classList.toggle('has-value', !!q);
-  const shown = items.filter(i => (filter === 'all' || cat(i.category) === filter) &&
+  const ql = $('search').value.trim().toLowerCase();
+  $('search-wrap').classList.toggle('has-value', !!ql);
+  shown = items.filter(i => (filter === 'all' || cat(i.category) === filter) &&
     (!ql || `${i.title} ${i.summary} ${i.publisher} ${domain(i.url)}`.toLowerCase().includes(ql)));
-  const groups = {};
-  for (const i of shown) (groups[i.date] ||= []).push(i);
+  limit = PAGE;
+  renderPage();
+}
+
+// Renders the first `limit` matches; the sentinel below the list raises it as you scroll.
+function renderPage() {
+  const q = $('search').value.trim();
+  const counts = {}, groups = {};
+  for (const i of shown) counts[i.date] = (counts[i.date] || 0) + 1;
+  for (const i of shown.slice(0, limit)) (groups[i.date] ||= []).push(i);
   $('items').innerHTML = shown.length ? Object.entries(groups).map(([d, list]) => `
-    <div class="date-label"><span>${dayLabel(d)}</span><span class="count">${list.length}</span></div>
+    <div class="date-label"><span>${dayLabel(d)}</span><span class="count">${counts[d]}</span></div>
     ${list.map(i => { const c = cat(i.category); return `
     <a class="card" href="${esc(i.url)}" target="_blank" rel="noopener">
       <span class="dot" style="--c:var(--cat-${c})"></span>
@@ -216,6 +233,8 @@ function renderItems() {
       <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')
     : '<p class="empty">No articles match your search.</p>';
+  io.unobserve($('sentinel'));
+  io.observe($('sentinel'));
 }
 
 function renderWeekly(weekly) {
@@ -258,6 +277,9 @@ $('filters').onclick = e => {
   renderItems();
 };
 $('search').oninput = renderItems;
+io.observe($('sentinel'));
+addEventListener('scroll', () => { $('top').hidden = scrollY < 800; }, { passive: true });
+$('top').onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
 $('clear').onclick = () => { $('search').value = ''; renderItems(); $('search').focus(); };
 
 fetch('data.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
