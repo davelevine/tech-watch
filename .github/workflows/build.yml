@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "17 */4 * * *"
   workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: "One-off backfill: look back this many days (normal runs use 3)"
+        required: false
+        default: ""
   pull_request:
 
 permissions:
@@ -20,7 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -34,6 +39,8 @@ jobs:
         run: python build.py
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          FRESH_DAYS: ${{ inputs.backfill_days || 3 }}
+          PER_FEED: ${{ inputs.backfill_days && 100 || 10 }}
 
       - name: Commit data
         if: github.event_name != 'pull_request'
