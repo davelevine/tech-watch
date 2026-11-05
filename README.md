@@ -21,6 +21,8 @@ Every four hours a GitHub Actions workflow runs `build.py`, which:
 
 The workflow commits those files and Cloudflare Pages deploys `site/` on the push. Items and seen URLs older than 90 days are pruned, so the data never grows unbounded.
 
+To fill in history, run the Build workflow by hand with `backfill_days` set (say, 30). It looks back that far and takes up to 100 entries per feed, once. Everything already seen is skipped, so it's safe to rerun.
+
 It looks after itself: a feed that's failed every fetch for 14 days gets listed in a single open "Dead feeds" issue, and a run where every LLM batch fails exits non-zero so GitHub emails you. Batches that fail are left unseen and retried on the next run.
 
 ## Adding or removing feeds
