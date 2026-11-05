@@ -1,0 +1,45 @@
+# Tech Watch
+
+A set-it-and-forget-it tech news digest at [tech.levine.io](https://tech.levine.io): AI, security, architecture, SDLC and regulation news, each item summarized in one sentence, plus five weekly "essentials" with a line on why they matter. Inspired by [watch.edebost.com](https://watch.edebost.com/).
+
+**What's covered:**
+
+- How it works
+- Adding or removing feeds
+- Running it locally
+- Setup
+
+## How it works
+
+Every four hours a GitHub Actions workflow runs `build.py`, which:
+
+1. Fetches every feed in `feeds.opml`. A failing feed is skipped, never fatal.
+2. Keeps dated entries from the last 3 days that haven't been seen before, up to 10 per feed.
+3. Sends them to Ollama Cloud (`deepseek-v4.1-flash`) in batches of 20 for a category, a 1-5 relevance score and a one-sentence summary. Anything scoring below 3 (marketing, webinars, hiring) is dropped.
+4. Once a day, asks the model to pick the week's five essentials.
+5. Writes `site/data.json` and `site/rss.xml`, and remembers seen URLs in `state.json`.
+
+The workflow commits those files and Cloudflare Pages deploys `site/` on the push. Items and seen URLs older than 90 days are pruned, so the data never grows unbounded.
+
+It looks after itself: a feed that's failed every fetch for 14 days gets listed in a single open "Dead feeds" issue, and a run where every LLM batch fails exits non-zero so GitHub emails you. Batches that fail are left unseen and retried on the next run.
+
+## Adding or removing feeds
+
+Edit `feeds.opml`; each feed is one `<outline>` line. The `text` attribute is the publisher name shown on the site. Some big publishers (Anthropic, Cohere, Reuters) don't publish RSS; Anthropic comes from a community-maintained feed, and the Hacker News 300+ feed catches most of the rest.
+
+## Running it locally
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt pytest
+.venv/bin/pytest -q
+OLLAMA_API_KEY=... .venv/bin/python build.py
+python3 -m http.server -d site 8000
+```
+
+The build writes real data, so don't commit a local run's output unless you mean to.
+
+## Setup
+
+- **Secret:** `OLLAMA_API_KEY` in the repo's Actions secrets.
+- **Cloudflare Pages:** project `tech-watch`, connected to this repo, production branch `main`, no build command, output directory `site`.
+- **Domain:** `tech.levine.io` is a proxied CNAME to `tech-watch.pages.dev`, managed in [homelab-iac](https://github.com/davelevine/homelab-iac) (`terraform/modules/cloudflare/data/dns_zones.yaml`), and added as a custom domain on the Pages project.
