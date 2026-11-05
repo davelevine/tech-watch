@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head><title>Tech Watch feeds</title></head>
+  <body>
+    <outline type="rss" text="Anthropic (community feed)" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"/>
+    <outline type="rss" text="AWS Machine Learning Blog" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
+    <outline type="rss" text="AWS Security Blog" xmlUrl="https://aws.amazon.com/blogs/security/feed/"/>
+    <outline type="rss" text="BleepingComputer" xmlUrl="https://www.bleepingcomputer.com/feed/"/>
+    <outline type="rss" text="Cloudflare Blog" xmlUrl="https://blog.cloudflare.com/rss/"/>
+    <outline type="rss" text="CNCF" xmlUrl="https://www.cncf.io/feed"/>
+    <outline type="rss" text="CrowdStrike" xmlUrl="https://www.crowdstrike.com/en-us/blog/feed"/>
+    <outline type="rss" text="Cursor" xmlUrl="https://cursor.com/atom.xml"/>
+    <outline type="rss" text="Docker" xmlUrl="https://www.docker.com/feed/"/>
+    <outline type="rss" text="ElevenLabs" xmlUrl="https://elevenlabs.io/blog/rss.xml"/>
+    <outline type="rss" text="GitHub Changelog" xmlUrl="https://github.blog/changelog/feed/"/>
+    <outline type="rss" text="GitLab Security Releases" xmlUrl="https://about.gitlab.com/security-releases.xml"/>
+    <outline type="rss" text="Google Blog" xmlUrl="https://blog.google/rss"/>
+    <outline type="rss" text="Google Cloud Blog" xmlUrl="https://cloudblog.withgoogle.com/rss/"/>
+    <outline type="rss" text="Google DeepMind" xmlUrl="https://deepmind.google/blog/rss.xml"/>
+    <outline type="rss" text="Google Research" xmlUrl="https://research.google/blog/rss"/>
+    <outline type="rss" text="Hacker News 300+" xmlUrl="https://hnrss.org/frontpage?points=300"/>
+    <outline type="rss" text="Hugging Face" xmlUrl="https://huggingface.co/blog/feed.xml"/>
+    <outline type="rss" text="Huntress" xmlUrl="https://www.huntress.com/blog/rss.xml"/>
+    <outline type="rss" text="InfoQ" xmlUrl="https://www.infoq.com/feed"/>
+    <outline type="rss" text="Kubernetes" xmlUrl="https://kubernetes.io/feed.xml"/>
+    <outline type="rss" text="Martin Fowler" xmlUrl="https://martinfowler.com/feed.atom"/>
+    <outline type="rss" text="Meta Newsroom" xmlUrl="https://about.fb.com/feed"/>
+    <outline type="rss" text="Microsoft Security Blog" xmlUrl="https://www.microsoft.com/en-us/security/blog/feed/"/>
+    <outline type="rss" text="Mistral" xmlUrl="https://mistral.ai/news/rss"/>
+    <outline type="rss" text="NVIDIA Blog" xmlUrl="https://blogs.nvidia.com/feed/"/>
+    <outline type="rss" text="OpenAI" xmlUrl="https://openai.com/news/rss.xml"/>
+    <outline type="rss" text="OpenAI Alignment" xmlUrl="https://alignment.openai.com/rss.xml"/>
+    <outline type="rss" text="OWASP Gen AI Security Project" xmlUrl="https://genai.owasp.org/feed/"/>
+    <outline type="rss" text="Qwen" xmlUrl="https://qwenlm.github.io/blog/index.xml"/>
+    <outline type="rss" text="Sansec" xmlUrl="https://sansec.io/atom.xml"/>
+    <outline type="rss" text="SecurityWeek" xmlUrl="https://www.securityweek.com/feed/"/>
+    <outline type="rss" text="Simon Willison" xmlUrl="https://simonwillison.net/atom/everything/"/>
+    <outline type="rss" text="Socket" xmlUrl="https://socket.dev/api/blog/feed.atom"/>
+    <outline type="rss" text="Tailscale" xmlUrl="https://tailscale.com/blog/index.xml"/>
+    <outline type="rss" text="The GitHub Blog" xmlUrl="https://github.blog/feed/"/>
+    <outline type="rss" text="The Hacker News" xmlUrl="https://feeds.feedburner.com/TheHackersNews"/>
+    <outline type="rss" text="Warp" xmlUrl="https://www.warp.dev/blog/feed.xml"/>
+  </body>
+</opml>

@@ -41,5 +41,5 @@ The build writes real data, so don't commit a local run's output unless you mean
 ## Setup
 
 - **Secret:** `OLLAMA_API_KEY` in the repo's Actions secrets.
-- **Cloudflare Pages:** project `tech-watch`, connected to this repo, production branch `main`, no build command, output directory `site`.
-- **Domain:** `tech.levine.io` is a proxied CNAME to `tech-watch.pages.dev`, managed in [homelab-iac](https://github.com/davelevine/homelab-iac) (`terraform/modules/cloudflare/data/dns_zones.yaml`), and added as a custom domain on the Pages project.
+- **Cloudflare Pages:** project `levine-tech-watch` (`tech-watch.pages.dev` is taken), connected to this repo, production branch `main`, no build command, output directory `site`.
+- **Domain:** `tech.levine.io` is a proxied CNAME to `levine-tech-watch.pages.dev`, managed in [homelab-iac](https://github.com/davelevine/homelab-iac) (`terraform/modules/cloudflare/data/dns_zones.yaml`), and added as a custom domain on the Pages project.
