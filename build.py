@@ -30,7 +30,8 @@ MIN_RELEVANCE = {"ai": 8, "security": 8, "architecture": 7, "sdlc": 7, "regulati
 DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' headlines
 DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the real filtering
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
-BATCH = 20
+BATCH = 20            # stories per repeat check
+SCORE_WORKERS = 8     # parallel scoring calls
 UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
 TRACKING = re.compile(r"^(utm_|ref$|source$|fbclid$|gclid$)")
 
@@ -174,6 +175,21 @@ def classify(batch):
     return {batch[r["id"]]["url"]: r for r in res if 0 <= r["id"] < len(batch)}
 
 
+def score_each(items):
+    """Scores every story in its own call, in parallel. Scored in a batch, the model rationed high
+    scores across the batch, so a story's score depended on its neighbours. Returns {url: result or None}."""
+    def one(item):
+        for attempt in range(3):
+            try:
+                return item["url"], classify([item]).get(item["url"])
+            except Exception as e:
+                if attempt == 2:
+                    print(f"::warning::scoring failed for {item['url']}: {e}")
+        return item["url"], None
+    with ThreadPoolExecutor(SCORE_WORKERS) as ex:
+        return dict(ex.map(one, items))
+
+
 def find_repeats(batch, recent):
     """Returns {url: duplicate_of} for items the model flags; recent: headlines already on the site."""
     payload = {"recent": recent, "items": [
@@ -290,36 +306,30 @@ def main():
                     new.append(c)
     print(f"{len(feeds)} feeds, {sum(r is None for r in fetched.values())} failed, {len(new)} new items")
 
-    batches = [new[n:n + BATCH] for n in range(0, len(new), BATCH)]
     week_ago = (today - timedelta(days=DEDUPE_DAYS)).isoformat()
     recent = [i["title"] for i in data["items"] if i["date"] >= week_ago]
-    failed = 0
-    for batch in batches:
-        try:
-            results = classify(batch)
-        except Exception as e:  # leave the batch unseen so the next run retries it
-            print(f"::warning::classify failed: {e}")
-            failed += 1
+    scores = score_each(new)
+    failed = sum(1 for r in scores.values() if r is None)
+    passing = []
+    for item in new:
+        r = scores.get(item["url"])
+        if not r:  # left unseen, so the next run retries it
             continue
-        passing = []
-        for item in batch:
-            r = results.get(item["url"])
-            if not r:
-                continue
-            seen[item["url"]] = item["date"]
-            if r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
-                passing.append((item | {"summary": r["summary"]}, r))
-        if not passing:
-            continue
+        seen[item["url"]] = item["date"]
+        if r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
+            passing.append((item | {"summary": r["summary"]}, r))
+
+    for n0 in range(0, len(passing), BATCH):
+        chunk = passing[n0:n0 + BATCH]
         try:
-            dups = find_repeats([i for i, _ in passing], recent)
+            dups = find_repeats([i for i, _ in chunk], recent)
         except Exception as e:  # unsee them so the next run scores and checks them again
             print(f"::warning::repeat check failed: {e}")
-            for item, _ in passing:
+            for item, _ in chunk:
                 seen.pop(item["url"], None)
             continue
         recent_titles, covered = {norm(t) for t in recent}, set()
-        for n, (item, r) in enumerate(passing):
+        for n, (item, r) in enumerate(chunk):
             repeat = repeats(dups.get(item["url"]), n, covered, recent_titles)
             covered.add(n)
             if repeat:
@@ -347,8 +357,8 @@ def main():
     STATE.write_text(json.dumps(state, indent=1, sort_keys=True) + "\n")
     (ROOT / "dead-feeds.txt").write_text("".join(f"{u}\n" for u in dead))
 
-    if batches and failed == len(batches):
-        sys.exit("every classify batch failed; check OLLAMA_API_KEY / Ollama Cloud")
+    if new and failed == len(new):
+        sys.exit("every scoring call failed; check OLLAMA_API_KEY / Ollama Cloud")
 
 
 if __name__ == "__main__":

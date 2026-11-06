@@ -84,3 +84,21 @@ def test_repeats_always_leaves_one_copy():
     assert not build.repeats("3", 3, {3}, set())                            # points at itself
     assert not build.repeats("5", 3, {5}, set())                            # points forward
     assert not build.repeats(None, 3, set(), set())
+
+
+def test_each_story_is_scored_alone(monkeypatch):
+    batches = []
+    def fake_classify(batch):
+        batches.append(len(batch))
+        return {batch[0]["url"]: {"category": "ai", "relevance": 8, "summary": "s"}}
+    monkeypatch.setattr(build, "classify", fake_classify)
+    items = [{"url": f"https://x.test/{n}", "title": "T", "publisher": "P", "excerpt": "E"} for n in range(5)]
+    out = build.score_each(items)
+    assert batches == [1] * 5 and set(out) == {i["url"] for i in items}
+
+
+def test_score_each_reports_failures_as_none(monkeypatch):
+    def boom(batch):
+        raise RuntimeError("402")
+    monkeypatch.setattr(build, "classify", boom)
+    assert build.score_each([{"url": "https://x.test/a", "title": "T", "publisher": "P", "excerpt": "E"}]) == {"https://x.test/a": None}
