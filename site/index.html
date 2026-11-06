@@ -8,6 +8,8 @@
 <link rel="alternate" type="application/rss+xml" title="Tech Watch" href="/rss.xml">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0a0b0d">
 <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');</script>
 <style>
   :root {
@@ -107,6 +109,12 @@
     border-radius: 999px; background: var(--bg-card); color: var(--accent); cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .2); }
   .back-to-top[hidden] { display: none; }
   .back-to-top svg { width: 18px; height: 18px; }
+  .card.read .card-title { color: var(--text-muted); font-weight: 500; }
+  .new { flex: 0 0 auto; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: var(--accent-contrast); font-size: .66rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  @media (prefers-reduced-motion: reduce) {
+    .reader, .reader-backdrop, .feed, .card-arrow, .thumb { transition: none !important; }
+    .rail { scroll-behavior: auto; }
+  }
   .empty { padding: 60px 24px; color: var(--text-muted); text-align: center; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (hover: hover) {
@@ -144,6 +152,7 @@
     body.reading .feed { transform: translateX(calc(-25% * (1 - var(--drag, 0)))); }
   }
   .reader-bar { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 12px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+  .reader-source:hover { color: var(--accent); }
   .reader-source { flex: 1; min-width: 0; color: var(--text-muted); font-size: .8125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .reader-body { position: relative; flex: 1; min-height: 0; }
   .reader-body iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
@@ -190,13 +199,10 @@
 <main class="items feed" id="items"><p class="empty">Loading articles…</p></main>
 <div id="sentinel"></div>
 <div class="reader-backdrop" id="reader-backdrop"></div>
-<aside class="reader" id="reader" aria-label="Reader" aria-hidden="true">
+<aside class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Reader" aria-hidden="true">
   <div class="reader-bar">
     <button class="icon-btn" id="reader-close" type="button" aria-label="Close reader"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    <span class="reader-source" id="reader-source"></span>
-    <a class="icon-btn" id="reader-original" target="_blank" rel="noopener" title="Open the original" aria-label="Open the original">
-      <svg viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-    </a>
+    <a class="reader-source" id="reader-source" target="_blank" rel="noopener" title="Open the original"></a>
   </div>
   <div class="reader-body" id="reader-body"></div>
 </aside>
@@ -255,12 +261,12 @@ function renderPage() {
   $('items').innerHTML = shown.length ? Object.entries(groups).map(([d, list]) => `
     <div class="date-label"><span>${dayLabel(d)}</span><span class="count">${counts[d]}</span></div>
     ${list.map(i => { const c = cat(i.category); return `
-    <a class="card" href="${esc(i.url)}" target="_blank" rel="noopener">
+    <a class="card${readSet.has(i.url) ? ' read' : ''}" href="${esc(i.url)}" target="_blank" rel="noopener">
       <span class="dot" style="--c:var(--cat-${c})"></span>
       <div class="card-body">
         <div class="card-title">${highlight(i.title, q)}</div>
         ${i.summary ? `<p class="card-summary">${highlight(i.summary, q)}</p>` : ''}
-        <div class="card-meta"><span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span></div>
+        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span></div>
       </div>
       <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')
@@ -289,10 +295,12 @@ function renderWeekly(weekly) {
   sync();
 }
 
+const syncThemeColor = () => document.querySelector('meta[name="theme-color"]').setAttribute('content', css('--bg'));
 $('theme').onclick = () => {
   const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = t;
   localStorage.setItem('theme', t);
+  syncThemeColor();
 };
 $('info').onclick = e => {
   e.stopPropagation();
@@ -314,6 +322,28 @@ addEventListener('scroll', () => { $('top').hidden = scrollY < 800; }, { passive
 $('top').onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
 $('clear').onclick = () => { $('search').value = ''; renderItems(); $('search').focus(); };
 
+// Read and "new since last visit" state lives only in this browser.
+let weekly = null;
+const readSet = new Set(JSON.parse(localStorage.getItem('read') || '[]'));
+const seenUntil = localStorage.getItem('seenUntil');  // the build you'd seen by the end of your last visit
+const isNew = i => !!(seenUntil && i.added && i.added > seenUntil && !readSet.has(i.url));
+const saveRead = () => localStorage.setItem('read', JSON.stringify([...readSet]));
+function pruneRead() {
+  const urls = new Set(items.map(i => i.url));
+  for (const u of readSet) if (!urls.has(u)) readSet.delete(u);
+  saveRead();
+}
+const cardFor = url => [...document.querySelectorAll('a.card')].find(a => a.getAttribute('href') === url);
+function markRead(url) {
+  if (!readSet.has(url)) { readSet.add(url); saveRead(); }
+  const card = cardFor(url);
+  card?.classList.add('read');
+  card?.querySelector('.new')?.remove();
+}
+const rememberSeen = () => { if (generatedAt) localStorage.setItem('seenUntil', generatedAt); };
+addEventListener('pagehide', rememberSeen);
+document.addEventListener('visibilitychange', () => { if (document.hidden) rememberSeen(); });
+
 // Redraws only when a new build has landed, keeping the filter, search and loaded depth.
 function load() {
   return fetch('data.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
@@ -321,16 +351,19 @@ function load() {
     const refresh = generatedAt !== null;
     generatedAt = data.generated_at;
     items = data.items || [];
+    weekly = data.weekly;
+    pruneRead();
     renderFilters();
     renderWeekly(data.weekly);
     renderItems(refresh);
+    if (!refresh) syncFromHash();
   });
 }
 let readerFor = null;
 
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 // Inside the article frame, the only script allowed is this one (by nonce): it reports rightward swipes to the
-// page so the reader can follow the finger, and forwards Escape and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
+// page so the reader can follow the finger, and forwards Escape, j/k and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
 const SWIPE_REPORTER = `let s = null;
 const send = (tw, t) => parent.postMessage({ tw, x: t && t.screenX }, '*');
 addEventListener('touchstart', e => { const t = e.touches[0]; s = { x: t.screenX, y: t.screenY, ax: null }; }, { passive: true });
@@ -344,16 +377,19 @@ const end = () => { if (s && s.ax === 'x') send('end'); s = null; };
 addEventListener('touchend', end); addEventListener('touchcancel', end);
 addEventListener('keydown', e => {  // keys pressed while the article has focus never reach the page
   const k = e.key.toLowerCase();
-  if (k === 'escape' || ((e.metaKey || e.ctrlKey) && k === 'k')) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k }, '*'); }
+  if (!e.altKey && (k === 'escape' || k === 'j' || k === 'k')) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k, mod: e.metaKey || e.ctrlKey }, '*'); }
 });`;
 
-function articleDoc(i, html, nonce) {
+function articleDoc(i, html, nonce, why) {
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; media-src https:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'">
 <base target="_blank"><style>
 :root { color-scheme: ${document.documentElement.dataset.theme}; }
 body { margin: 0; background: ${css('--bg')}; color: ${css('--text')}; font: 1.125rem/1.75 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
 main { max-width: 680px; margin: 0 auto; padding: 40px 24px 96px; }
+h1 a { color: inherit; text-decoration: none; } h1 a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.why { margin: -1.2em 0 2.4em; padding: 12px 16px; border-left: 3px solid ${css('--accent')}; border-radius: 0 8px 8px 0; background: ${css('--bg-card')}; font: .95rem/1.5 Inter, system-ui, sans-serif; }
+.why b { display: block; margin-bottom: 2px; color: ${css('--accent')}; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; }
 h1 { font-size: 2.1rem; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 .35em; }
 .src { margin-bottom: 2.4em; color: ${css('--accent')}; font: 600 .78rem/1 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
 h2, h3, h4 { line-height: 1.3; margin: 1.6em 0 .5em; }
@@ -366,24 +402,33 @@ code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size
 table { display: block; overflow: auto; border-collapse: collapse; font-size: .9em; } th, td { padding: 4px 8px; border: 1px solid ${css('--border')}; }
 hr { border: 0; border-top: 1px solid ${css('--border')}; }
 @media (max-width: 600px) { main { padding: 24px 18px 80px; } h1 { font-size: 1.6rem; } body { font-size: 1.0625rem; } }
-</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1>${esc(i.title)}</h1><div class="src">${esc(domain(i.url))}</div>${html}</main></body></html>`;
+</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}</div>${why ? `<div class="why"><b>Why it matters</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
 }
 
-function openReader(i) {
+const readHash = url => '#read=' + encodeURIComponent(url);
+let readerPushed = false;  // false when the reader was opened from a #read= link, so closing mustn't go back off the site
+function openReader(i, { fromHash = false } = {}) {
+  const fresh = !document.body.classList.contains('reading');
   readerFor = i.url;
+  markRead(i.url);
+  const why = weekly?.items?.find(p => p.url === i.url)?.why;
   $('reader-source').textContent = `${i.publisher} · ${domain(i.url)}`;
-  $('reader-original').href = i.url;
+  $('reader-source').href = i.url;
   $('reader-body').innerHTML = '<div class="reader-msg">Loading the article…</div>';
   document.body.classList.add('reading');
   $('reader').setAttribute('aria-hidden', 'false');
-  if (!history.state?.reader) history.pushState({ reader: true }, '');
+  document.querySelectorAll('.feed, #top').forEach(el => { el.inert = true; });
+  if (fromHash) { history.replaceState({ reader: true }, '', readHash(i.url)); readerPushed = false; }
+  else if (fresh) { history.pushState({ reader: true }, '', readHash(i.url)); readerPushed = true; }
+  else history.replaceState({ reader: true }, '', readHash(i.url));
+  if (fresh) $('reader-close').focus({ preventScroll: true });
   fetch('/api/read?url=' + encodeURIComponent(i.url), { cache: 'no-store' }).then(r => r.json()).then(r => {
     if (readerFor !== i.url) return;  // another article was opened meanwhile
     const frame = document.createElement('iframe');
     if (r.content) {
       // Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
       frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
-      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID());
+      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID(), why);
     } else if (r.frameable) {
       frame.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms';
       frame.referrerPolicy = 'no-referrer';
@@ -394,17 +439,32 @@ function openReader(i) {
     $('reader-body').replaceChildren(frame);
   }).catch(() => {
     if (readerFor !== i.url) return;
-    $('reader-body').innerHTML = `<div class="reader-msg">This site doesn’t allow a reader view.<a href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a></div>`;
+    $('reader-body').innerHTML = `<div class="reader-msg">${why ? `<p><b>Why it matters:</b> ${esc(why)}</p>` : ''}This site doesn’t allow a reader view.<a href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a></div>`;
   });
 }
 function closeReader() {
+  const url = readerFor;
   readerFor = null;
   document.body.classList.remove('reading');
   $('reader').setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('.feed, #top').forEach(el => { el.inert = false; });
+  const card = url && cardFor(url);  // back to where you were, even after j/k through several articles
+  if (card) { card.focus({ preventScroll: true }); card.scrollIntoView({ block: 'nearest' }); }
   setTimeout(() => { if (!readerFor) $('reader-body').replaceChildren(); }, 250);
 }
-const dismiss = () => (history.state?.reader ? history.back() : closeReader());
-addEventListener('popstate', () => { if (document.body.classList.contains('reading')) closeReader(); });
+function dismiss() {
+  if (readerPushed && history.state?.reader) return history.back();
+  history.replaceState(null, '', location.pathname + location.search);
+  closeReader();
+}
+// Back/forward and #read= links: the URL decides whether the reader is open and on what.
+function syncFromHash() {
+  const url = location.hash.startsWith('#read=') ? decodeURIComponent(location.hash.slice(6)) : null;
+  const i = url && items.find(x => x.url === url);
+  if (i && readerFor !== url) openReader(i, { fromHash: true });
+  else if (!i && document.body.classList.contains('reading')) closeReader();
+}
+addEventListener('popstate', syncFromHash);
 // Swipe right to close: the reader follows the finger, then closes past a third of its width or on a flick
 // (judged on the finger's speed at release, px/ms).
 let drag = null;
@@ -444,32 +504,54 @@ addEventListener('message', e => {
   if (e.data.tw === 'start') dragStart(e.data.x);
   else if (e.data.tw === 'move') dragMove(e.data.x);
   else if (e.data.tw === 'end') dragEnd();
-  else if (e.data.tw === 'key') onKey(e.data.key);
+  else if (e.data.tw === 'key') onKey(e.data.key, !!e.data.mod);
 });
 
 $('reader-close').onclick = dismiss;
 $('reader-backdrop').onclick = dismiss;
-function onKey(key, e) {
-  if (key === 'escape' && document.body.classList.contains('reading')) dismiss();
-  if (key === 'k' && (!e || e.metaKey || e.ctrlKey)) {
+// j/k: next/previous article (in the reader it switches articles in place); / and Cmd/Ctrl+K: search.
+function step(dir) {
+  if (document.body.classList.contains('reading')) {
+    const next = shown[shown.findIndex(i => i.url === readerFor) + dir];
+    if (!next) return;
+    if (shown.indexOf(next) >= limit) { limit += PAGE; renderPage(); }
+    return openReader(next);
+  }
+  const cards = [...document.querySelectorAll('a.card')];
+  const at = cards.indexOf(document.activeElement);
+  const target = cards[at < 0 ? 0 : Math.min(cards.length - 1, Math.max(0, at + dir))];
+  target?.focus({ preventScroll: true });
+  target?.scrollIntoView({ block: 'nearest' });
+}
+function onKey(key, mod, e) {
+  const reading = document.body.classList.contains('reading');
+  if (key === 'escape' && reading) return dismiss();
+  if (key === 'k' && mod) {
     e?.preventDefault();
-    if (document.body.classList.contains('reading')) dismiss();
+    if (reading) dismiss();
     $('search').focus();
     $('search').select();
+    return;
   }
+  if (mod || e?.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) return;
+  if (key === '/' && !reading) { e?.preventDefault(); $('search').focus(); }
+  else if (key === 'j' || key === 'k') { e?.preventDefault(); step(key === 'j' ? 1 : -1); }
 }
-addEventListener('keydown', e => onKey(e.key.toLowerCase(), e));
+addEventListener('keydown', e => onKey(e.key.toLowerCase(), e.metaKey || e.ctrlKey, e));
 if (matchMedia('(pointer: fine)').matches) $('search').placeholder = `Search...   ${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}`;
+document.addEventListener('auxclick', e => { const a = e.target.closest('a.card, a.weekly-card'); if (a && e.button === 1) markRead(a.getAttribute('href')); });
 // Plain clicks on an article open the reader; modified and middle clicks still open the site.
 document.addEventListener('click', e => {
   const a = e.target.closest('a.card, a.weekly-card');
-  if (!a || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (!a) return;
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return markRead(a.getAttribute('href'));
   const i = items.find(x => x.url === a.getAttribute('href'));
   if (!i) return;
   e.preventDefault();
   openReader(i);
 });
 
+syncThemeColor();
 load().catch(() => { $('items').innerHTML = '<p class="empty">Couldn’t load the news. Try again in a bit.</p>'; });
 // Builds land every ~4h: check every 15 min while visible, and when the tab comes back into view.
 const check = () => { if (!document.hidden) load().catch(() => {}); };

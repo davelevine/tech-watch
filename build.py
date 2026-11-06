@@ -292,7 +292,8 @@ def main():
                 covered.add(n)
                 recent.append(item["title"])
                 data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
-                                     | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"]})
+                                     | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"],
+                                        "added": now().isoformat(timespec="seconds")})  # drives "new since last visit"
 
     keep = (today - timedelta(days=KEEP_DAYS)).isoformat()
     data["items"] = cap_per_day([i for i in data["items"] if i["date"] >= keep])
