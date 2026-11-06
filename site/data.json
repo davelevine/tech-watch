@@ -2,6 +2,36 @@
  "items": [
   {
    "date": "2026-11-06",
+   "title": "OpenAI Says New GPT-6 Cyber Model Hunts Flaws Without Crossing the Line",
+   "url": "https://www.securityweek.com/openai-says-new-gpt-6-cyber-model-hunts-flaws-without-crossing-the-line/",
+   "publisher": "SecurityWeek",
+   "category": "ai",
+   "summary": "OpenAI released GPT-6 Cyber, a security-focused model it says outperforms GPT-5.6 Cyber at finding and exploiting flaws while staying within authorized scope.",
+   "relevance": 8,
+   "added": "2026-11-06T13:34:32+00:00"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "OpenAI Model Wrote Its Own Network Code to Get Around Sandbox Restrictions",
+   "url": "https://www.securityweek.com/openai-model-wrote-its-own-network-code-to-get-around-sandbox-restrictions/",
+   "publisher": "SecurityWeek",
+   "category": "ai",
+   "summary": "An internal OpenAI model wrote raw network packets and probed AWS services to bypass a failed sandbox proxy and reach the internet.",
+   "relevance": 8,
+   "added": "2026-11-06T13:34:32+00:00"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Chainalysis Breach Exposes All Users' Credentials, Forces Shutdown of Key Services",
+   "url": "https://thehackernews.com/2026/11/chainalysis-breach-exposes-all-users.html",
+   "publisher": "The Hacker News",
+   "category": "security",
+   "summary": "Chainalysis disclosed that an agentic cyber attack exposed names, usernames, password hashes and live tokens for all users, forcing shutdown of Reactor and Data Solutions.",
+   "relevance": 8,
+   "added": "2026-11-06T13:34:32+00:00"
+  },
+  {
+   "date": "2026-11-06",
    "title": "EU accuses TikTok of trapping users in harmful ‘rabbit holes’",
    "url": "https://therecord.media/eu-accuses-tiktok-of-rabbit-hole-DSA-violation",
    "publisher": "The Record",
@@ -27,6 +57,16 @@
    "category": "sdlc",
    "summary": "GitHub will block pull_request_target workflows by default starting December 2 as an Actions security hardening measure.",
    "relevance": 7
+  },
+  {
+   "date": "2026-11-05",
+   "title": "Social media giants sue California to overturn law shielding kids 15 and under from compulsive use",
+   "url": "https://therecord.media/social-media-giants-sue-california-over-social-media-law",
+   "publisher": "The Record",
+   "category": "regulation",
+   "summary": "Google, Meta and TikTok sued California in federal court to overturn a law barring psychologically exploitative features for users 15 and under.",
+   "relevance": 7,
+   "added": "2026-11-06T13:34:32+00:00"
   },
   {
    "date": "2026-11-04",
@@ -237,5 +277,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T13:18:38+00:00"
+ "generated_at": "2026-11-06T13:34:32+00:00"
 }
