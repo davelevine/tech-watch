@@ -2,6 +2,8 @@ import json
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta, timezone
 
+import pytest
+
 import build
 
 
@@ -130,3 +132,21 @@ def test_run_summary_counts_and_near_misses():
     assert "**Kept:** 1" in out and "[T0](https://x.test/0)" in out
     near = out.split("One point under the bar")[1]
     assert "T1" in near and "T2" not in near
+
+
+def test_llm_reads_the_cli_and_refuses_another_model(monkeypatch):
+    import types
+    replies = []
+    monkeypatch.setattr(build.subprocess, "run", lambda *a, **k: replies.pop(0))
+    ok = {"structured_output": {"items": [{"id": 0}]}, "modelUsage": {build.MODEL: {}}}
+    replies.append(types.SimpleNamespace(stdout=json.dumps(ok), stderr="", returncode=0))
+    assert build.llm("system", "user", {}) == [{"id": 0}]
+
+    swapped = dict(ok, modelUsage={"claude-other": {}})  # the CLI answered with a different model
+    replies.append(types.SimpleNamespace(stdout=json.dumps(swapped), stderr="", returncode=0))
+    with pytest.raises(RuntimeError, match="not " + build.MODEL):
+        build.llm("system", "user", {})
+
+    replies.append(types.SimpleNamespace(stdout="", stderr="Invalid API key", returncode=1))
+    with pytest.raises(RuntimeError, match="Invalid API key"):
+        build.llm("system", "user", {})

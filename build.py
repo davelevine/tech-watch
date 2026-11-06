@@ -4,7 +4,9 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -19,7 +21,8 @@ ROOT = Path(__file__).parent
 SITE = ROOT / "site"
 STATE = ROOT / "state.json"
 SITE_URL = "https://tech.levine.io"
-MODEL = os.environ.get("OLLAMA_MODEL", "deepseek-v4.1-flash")
+MODEL = os.environ.get("TECH_WATCH_MODEL", "claude-haiku-5-5")
+CLAUDE = os.environ.get("CLAUDE_BIN", "claude")  # Claude Code CLI
 CATEGORIES = ["ai", "security", "architecture", "sdlc", "regulation", "other"]
 KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
 FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries published longer ago than this
@@ -31,7 +34,7 @@ DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' he
 DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the real filtering
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20            # stories per repeat check
-SCORE_WORKERS = 8     # parallel scoring calls
+SCORE_WORKERS = 6     # parallel scoring calls (each is a CLI process)
 UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
 # The site's edge blocks non-browser user agents, so its own reader endpoint is called as a browser.
 BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
@@ -97,23 +100,23 @@ def candidates(publisher, entries, seen, cutoff):
 
 
 def llm(system, user, schema):
-    """Returns the list of result objects."""
-    body = json.dumps({
-        "model": MODEL,
-        "stream": False,
-        "think": False,
-        "format": schema,
-        "options": {"temperature": 0},
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-    }).encode()
-    req = urllib.request.Request("https://ollama.com/api/chat", data=body, headers={
-        "Authorization": f"Bearer {os.environ['OLLAMA_API_KEY']}",
-        "Content-Type": "application/json",
-    })
-    with urllib.request.urlopen(req, timeout=300) as resp:
-        content = json.loads(resp.read())["message"]["content"]
-    # The model sometimes returns the bare array instead of the schema's wrapper object.
-    res = json.loads(content.strip().removeprefix("```json").removesuffix("```"))
+    """One structured call to Claude through the Claude Code CLI, which runs on the subscription
+    (CLAUDE_CODE_OAUTH_TOKEN in CI). Tools, settings, MCP and sessions are off, so a call carries only
+    the prompt. Returns the list of result objects."""
+    r = subprocess.run(
+        [CLAUDE, "-p", "--model", MODEL, "--system-prompt", system, "--tools", "", "--no-session-persistence",
+         "--setting-sources", "", "--strict-mcp-config", "--output-format", "json", "--json-schema", json.dumps(schema), user],
+        capture_output=True, text=True, timeout=300, cwd=tempfile.gettempdir())
+    try:
+        out = json.loads(r.stdout)
+    except json.JSONDecodeError:
+        raise RuntimeError(f"claude exited {r.returncode}: {(r.stderr or r.stdout)[:300]}") from None
+    if out.get("is_error") or "structured_output" not in out:
+        raise RuntimeError(f"claude error: {str(out.get('result'))[:300]}")
+    # An unrecognized model name makes the CLI quietly answer with another model; scores would drift.
+    if MODEL not in out.get("modelUsage", {}):
+        raise RuntimeError(f"answered by {list(out.get('modelUsage', {}))}, not {MODEL}")
+    res = out["structured_output"]
     return res if isinstance(res, list) else next(v for v in res.values() if isinstance(v, list))
 
 
@@ -154,19 +157,19 @@ CLASSIFY_SCHEMA = {
             "relevance": {"type": "integer"},
             "summary": {"type": "string"},
         },
-        "required": ["id", "category", "relevance", "summary"],
+        "required": ["id", "category", "relevance", "summary"], "additionalProperties": False,
     }}},
-    "required": ["items"],
+    "required": ["items"], "additionalProperties": False,
 }
 
 REPEATS_SCHEMA = {
     "type": "object",
     "properties": {"items": {"type": "array", "items": {
         "type": "object",
-        "properties": {"id": {"type": "integer"}, "duplicate_of": {"type": ["string", "null"]}},
-        "required": ["id", "duplicate_of"],
+        "properties": {"id": {"type": "integer"}, "duplicate_of": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+        "required": ["id", "duplicate_of"], "additionalProperties": False,
     }}},
-    "required": ["items"],
+    "required": ["items"], "additionalProperties": False,
 }
 
 
@@ -212,9 +215,9 @@ WEEKLY_SCHEMA = {
     "properties": {"picks": {"type": "array", "items": {
         "type": "object",
         "properties": {"id": {"type": "integer"}, "why": {"type": "string"}},
-        "required": ["id", "why"],
+        "required": ["id", "why"], "additionalProperties": False,
     }}},
-    "required": ["picks"],
+    "required": ["picks"], "additionalProperties": False,
 }
 
 
@@ -419,7 +422,7 @@ def main():
     write_summary(len(feeds), sum(r is None for r in fetched.values()), new, scores, kept, repeated, dead)
 
     if new and failed == len(new):
-        sys.exit("every scoring call failed; check OLLAMA_API_KEY / Ollama Cloud")
+        sys.exit("every scoring call failed; check CLAUDE_CODE_OAUTH_TOKEN and the Claude Code CLI")
 
 
 if __name__ == "__main__":
