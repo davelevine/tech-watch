@@ -76,6 +76,26 @@ def test_feed_renders(browser):
     assert pg.problems == []
 
 
+def test_phone_menu(browser):
+    pg = open_site(browser, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)
+    assert pg.locator("#updated").is_visible() and pg.locator("#theme").is_hidden()
+    assert pg.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    pg.tap("#menu-btn")
+    assert pg.locator("#menu a[href='/rss.xml']").is_visible()
+    theme = pg.evaluate("document.documentElement.dataset.theme")
+    pg.tap("#theme")
+    pg.wait_for_function("t => document.documentElement.dataset.theme !== t", arg=theme)  # swaps inside a view transition
+    pg.keyboard.press("Escape")
+    assert pg.locator("#theme").is_hidden()
+    assert pg.problems == []
+
+
+def test_wide_screens_keep_the_controls_in_the_header(browser):
+    pg = open_site(browser, viewport={"width": 1300, "height": 900})
+    assert pg.locator("#theme").is_visible() and pg.locator("#menu-btn").is_hidden()
+    assert pg.problems == []
+
+
 def test_reader_and_frame_relay_run_under_csp(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     card, title = first_card(pg)
