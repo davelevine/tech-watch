@@ -76,6 +76,69 @@ def test_feed_renders(browser):
     assert pg.problems == []
 
 
+def test_phone_menu(browser):
+    pg = open_site(browser, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)
+    assert pg.locator("#updated").is_visible() and pg.locator("#theme").is_hidden()
+    assert pg.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    pg.tap("#menu-btn")
+    assert pg.locator("#menu a[href='/rss.xml']").is_visible()
+    theme = pg.evaluate("document.documentElement.dataset.theme")
+    pg.tap("#theme")
+    pg.wait_for_function("t => document.documentElement.dataset.theme !== t", arg=theme)  # swaps inside a view transition
+    pg.keyboard.press("Escape")
+    pg.locator("#theme").wait_for(state="hidden")  # after the closing fade
+    # Tapping away closes the menu without opening the article underneath.
+    pg.locator("a.card").nth(1).scroll_into_view_if_needed()
+    x, y = pg.evaluate("""() => { const r = [...document.querySelectorAll('a.card')].map(c => c.getBoundingClientRect())
+        .find(r => r.top > 300 && r.top + r.height / 2 < innerHeight); return [r.left + r.width / 2, r.top + r.height / 2]; }""")
+    pg.tap("#menu-btn")
+    assert pg.evaluate("document.getElementById('menu').getBoundingClientRect().width") == 320  # full width
+    pg.wait_for_timeout(300)
+    pg.touchscreen.tap(x, y)
+    pg.locator("#theme").wait_for(state="hidden")
+    assert not reading(pg)
+    pg.touchscreen.tap(x, y)
+    pg.wait_for_selector("#reader-body iframe")
+    assert pg.problems == []
+
+
+def test_animations_run_under_reduced_motion(browser):
+    pg = open_site(browser, viewport={"width": 412, "height": 800}, has_touch=True, is_mobile=True, reduced_motion="reduce")
+    running = "s => getComputedStyle(document.querySelector(s)).transitionDuration !== '0s' && getComputedStyle(document.querySelector(s)).transitionProperty !== 'none'"
+    for selector in ("#menu", "#reader", ".thumb"):
+        assert pg.evaluate(running, selector), selector
+    pg.tap("#menu-btn")
+    pg.wait_for_function("() => document.getElementById('menu').getAnimations().length > 0 || getComputedStyle(document.getElementById('menu')).clipPath.includes('-40px')")
+    pg.evaluate("document.getElementById('theme').click()")
+    pg.wait_for_function("() => document.getAnimations().some(a => a.effect.pseudoElement?.includes('view-transition'))")
+    assert pg.problems == []
+
+
+def test_wide_screens_keep_the_controls_in_the_header(browser):
+    pg = open_site(browser, viewport={"width": 1300, "height": 900})
+    assert pg.locator("#theme").is_visible() and pg.locator("#menu-btn").is_hidden()
+    assert pg.problems == []
+
+
+@pytest.mark.parametrize("scheme", ["dark", "light"])
+def test_wcag(browser, scheme):
+    from axe_playwright_python.sync_playwright import Axe
+    tags = {"runOnly": {"type": "tag", "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]}}
+    pg = open_site(browser, viewport={"width": 412, "height": 915}, has_touch=True, is_mobile=True, color_scheme=scheme)
+    def violations():
+        return [(v["id"], v["nodes"][0]["html"][:80]) for v in Axe().run(pg, options=tags).response["violations"]]
+    assert violations() == []
+    # Every control on a phone is at least 44px. The info button reaches it through ::after, which a rect can't see.
+    small = """() => [...document.querySelectorAll('a, button, input')].filter(e => e.id !== 'info').map(e => [e, e.getBoundingClientRect()])
+        .filter(([, r]) => r.width && r.height && (r.width < 44 || r.height < 44)).map(([e, r]) => `${e.id || e.className} ${r.width}x${r.height}`)"""
+    assert pg.evaluate(small) == []
+    pg.tap("#menu-btn")
+    pg.wait_for_function("() => !document.getElementById('menu').getAnimations().length")  # let the drawer finish opening
+    assert violations() == [] and pg.evaluate(small) == []
+    assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
+    assert pg.problems == []
+
+
 def test_reader_and_frame_relay_run_under_csp(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     card, title = first_card(pg)
