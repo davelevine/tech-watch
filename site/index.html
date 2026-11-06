@@ -27,6 +27,7 @@
   }
   * { box-sizing: border-box; margin: 0; }
   [hidden] { display: none !important; }
+  html { scrollbar-gutter: stable; }  /* the reader locks scrolling; keep the scrollbar's space so nothing shifts */
   body { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; }
