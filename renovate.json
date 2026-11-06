@@ -26,6 +26,11 @@
       "automerge": true
     },
     {
+      "description": "PR checks don't run the real build, so Claude Code CLI updates wait for review",
+      "matchDepNames": ["@anthropic-ai/claude-code"],
+      "automerge": false
+    },
+    {
       "description": "The reader's extraction stack moves together",
       "matchPackageNames": ["@mozilla/readability", "linkedom"],
       "groupName": "reader extraction"
@@ -44,6 +49,14 @@
       "matchStrings": ["playwright==(?<currentValue>[0-9][0-9.]*)"],
       "datasourceTemplate": "pypi",
       "depNameTemplate": "playwright"
+    },
+    {
+      "customType": "regex",
+      "description": "Claude Code CLI installed for the news build (it resolves the haiku model)",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["@anthropic-ai/claude-code@(?<currentValue>[0-9][0-9.]*)"],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "@anthropic-ai/claude-code"
     },
     {
       "customType": "regex",

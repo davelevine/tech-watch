@@ -1,6 +1,6 @@
-# Fetches feeds, summarizes new items with Ollama Cloud, and commits site/data.json.
-# Cloudflare Pages deploys site/ on every push to main.
-# Secrets: OLLAMA_API_KEY.
+# Fetches feeds, scores and summarizes new items with Claude (Haiku, through the Claude Code CLI on the
+# subscription), and commits site/data.json. Cloudflare Pages deploys site/ on every push to main.
+# Secrets: CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`; about a year's life).
 name: Build
 
 on:
@@ -37,18 +37,19 @@ jobs:
       - run: pip install -r requirements.txt pytest
       - run: pytest -q
 
-      - if: github.event_name == 'pull_request'
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 26
           cache: npm
       - if: github.event_name == 'pull_request'
         run: npm ci && node --test 'tests/*.test.js'
+      - if: github.event_name != 'pull_request'
+        run: npm install -g @anthropic-ai/claude-code@2.1.319
 
       - if: github.event_name != 'pull_request'
         run: python build.py
         env:
-          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           FRESH_DAYS: ${{ inputs.backfill_days || 3 }}
           PER_FEED: ${{ inputs.backfill_days && 100 || 10 }}
 

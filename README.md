@@ -18,7 +18,7 @@ The week's tech news, minus the noise.
 
 | Pipeline | Site | AI | Automation |
 |---|---|---|---|
-| [![Python](https://img.shields.io/badge/Python-%232c3e50?logo=python&logoColor=FFD43B&labelColor=2c3e50)](https://www.python.org/) [![feedparser](https://img.shields.io/badge/feedparser-%232c3e50?logo=rss&logoColor=F99B34&labelColor=2c3e50)](https://github.com/kurtmckee/feedparser) | [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-%232c3e50?logo=cloudflarepages&logoColor=F38020&labelColor=2c3e50)](https://pages.cloudflare.com/) [![JavaScript](https://img.shields.io/badge/Vanilla%20JS-%232c3e50?logo=javascript&logoColor=F7DF1E&labelColor=2c3e50)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Readability](https://img.shields.io/badge/Readability-%232c3e50?logo=firefoxbrowser&logoColor=FF7139&labelColor=2c3e50)](https://github.com/mozilla/readability) | [![Ollama](https://img.shields.io/badge/Ollama%20Cloud-%232c3e50?logo=ollama&logoColor=white&labelColor=2c3e50)](https://ollama.com/) | [![GitHub Actions](https://img.shields.io/badge/Actions-%232c3e50?logo=githubactions&logoColor=2088FF&labelColor=2c3e50)](https://github.com/features/actions) |
+| [![Python](https://img.shields.io/badge/Python-%232c3e50?logo=python&logoColor=FFD43B&labelColor=2c3e50)](https://www.python.org/) [![feedparser](https://img.shields.io/badge/feedparser-%232c3e50?logo=rss&logoColor=F99B34&labelColor=2c3e50)](https://github.com/kurtmckee/feedparser) | [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-%232c3e50?logo=cloudflarepages&logoColor=F38020&labelColor=2c3e50)](https://pages.cloudflare.com/) [![JavaScript](https://img.shields.io/badge/Vanilla%20JS-%232c3e50?logo=javascript&logoColor=F7DF1E&labelColor=2c3e50)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Readability](https://img.shields.io/badge/Readability-%232c3e50?logo=firefoxbrowser&logoColor=FF7139&labelColor=2c3e50)](https://github.com/mozilla/readability) | [![Claude](https://img.shields.io/badge/Claude%20Haiku-%232c3e50?logo=claude&logoColor=D97757&labelColor=2c3e50)](https://www.anthropic.com/claude) | [![GitHub Actions](https://img.shields.io/badge/Actions-%232c3e50?logo=githubactions&logoColor=2088FF&labelColor=2c3e50)](https://github.com/features/actions) |
 
 </div>
 
@@ -28,7 +28,7 @@ Tech Watch is a set-it-and-forget-it news digest covering AI, security, architec
 
 There's no server and no database. A scheduled GitHub Actions job does the work and commits a small JSON file, and a single static page renders it:
 
-- [`build.py`](build.py) fetches the feeds in [`feeds.opml`](feeds.opml), scores and summarizes new items with Ollama Cloud, removes duplicate coverage, and writes [`site/data.json`](site/data.json) and [`site/rss.xml`](site/rss.xml).
+- [`build.py`](build.py) fetches the feeds in [`feeds.opml`](feeds.opml), scores and summarizes new items with Claude Haiku, removes duplicate coverage, and writes [`site/data.json`](site/data.json) and [`site/rss.xml`](site/rss.xml).
 - [`site/index.html`](site/index.html) and [`site/app.js`](site/app.js) are the whole front end: no framework, no build step. [`site/_headers`](site/_headers) sets the Content-Security-Policy.
 - [`functions/api/read.js`](functions/api/read.js) powers the reader, pulling an article's text on demand when you open it.
 
@@ -48,7 +48,7 @@ Every four hours the Build workflow runs `build.py`:
 
 1. **Fetch:** reads every feed. A broken feed is skipped, never fatal.
 2. **Filter:** keeps dated entries from the last few days that haven't been seen before, capped per feed.
-3. **Score:** sends new items to Ollama Cloud (`deepseek-v4.1-flash`) in batches. Each gets a category, a 1-10 relevance score judged within its category, and a one-sentence summary.
+3. **Score:** sends each new story to Claude Haiku (`claude-haiku-5-5`) on its own, through the Claude Code CLI on a Claude subscription, so a story's score never depends on what it was batched with. Each gets a category, a 1-10 relevance score judged within its category, and a one-sentence summary.
 4. **Keep the notable ones:** 8+ for AI and Security, 7+ for the quieter categories, with a daily safety cap for unusually big news days.
 5. **Drop repeats:** the model flags a story that's already on the site from the past week (the same launch from another outlet, say). The code checks that claim, so one copy always survives.
 6. **Pick the essentials:** once a day, the model chooses the week's five.
@@ -89,7 +89,7 @@ Run the pipeline locally (it writes real data, so don't commit a local run's out
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt pytest
 .venv/bin/pytest -q
-OLLAMA_API_KEY=... .venv/bin/python build.py
+CLAUDE_CODE_OAUTH_TOKEN=... .venv/bin/python build.py   # needs the Claude Code CLI (npm i -g @anthropic-ai/claude-code)
 ```
 
 Then serve the site. The reader needs the Pages runtime, so use Wrangler rather than a plain static server:
@@ -137,7 +137,7 @@ Run the Build workflow by hand with `backfill_days` set (say, 30). It looks back
 
 [Renovate](https://docs.renovatebot.com/) ([`renovate.json`](renovate.json)) keeps every pin current: the GitHub Actions (pinned to commit digests), `feedparser`, Readability and linkedom, and the Playwright and Wrangler versions in the smoke job. New releases wait three days before an update is proposed. Patch and digest updates merge themselves once CI passes, including the browser smoke test; minor and major updates wait for review.
 
-Cloudflare Pages deploys every push to `main`, including the bot's data commits, and builds a preview for every PR. Its build command is `npm ci` with `site` as the output directory. The only secret is `OLLAMA_API_KEY`, in the repo's Actions secrets.
+Cloudflare Pages deploys every push to `main`, including the bot's data commits, and builds a preview for every PR. Its build command is `npm ci` with `site` as the output directory. The only secret is `CLAUDE_CODE_OAUTH_TOKEN`, a subscription token from `claude setup-token` (it lasts about a year), in the repo's Actions secrets. Scheduled and manual builds install the pinned Claude Code CLI to use it.
 
 ## Configuration
 
@@ -152,7 +152,8 @@ The knobs live at the top of [`build.py`](build.py):
 | `PER_FEED` | 10 | Newest entries taken per feed per run (env-overridable) |
 | `KEEP_DAYS` | 90 | Prune articles and seen URLs older than this |
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
-| `OLLAMA_MODEL` | `deepseek-v4.1-flash` | Model used for scoring and summaries (env) |
+| `TECH_WATCH_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
+| `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
 
 How often it runs is the `cron` line in [`build.yml`](.github/workflows/build.yml).
 
