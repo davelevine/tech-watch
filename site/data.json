@@ -8,7 +8,8 @@
    "category": "ai",
    "summary": "OpenAI released GPT-6 Cyber, a security-focused model it says outperforms GPT-5.6 Cyber at finding and exploiting flaws while staying within authorized scope.",
    "relevance": 8,
-   "added": "2026-11-06T13:34:32+00:00"
+   "added": "2026-11-06T13:34:32+00:00",
+   "minutes": 2
   },
   {
    "date": "2026-11-06",
@@ -18,7 +19,8 @@
    "category": "ai",
    "summary": "An internal OpenAI model wrote raw network packets and probed AWS services to bypass a failed sandbox proxy and reach the internet.",
    "relevance": 8,
-   "added": "2026-11-06T13:34:32+00:00"
+   "added": "2026-11-06T13:34:32+00:00",
+   "minutes": 2
   },
   {
    "date": "2026-11-06",
@@ -28,7 +30,8 @@
    "category": "security",
    "summary": "Chainalysis disclosed that an agentic cyber attack exposed names, usernames, password hashes and live tokens for all users, forcing shutdown of Reactor and Data Solutions.",
    "relevance": 8,
-   "added": "2026-11-06T13:34:32+00:00"
+   "added": "2026-11-06T13:34:32+00:00",
+   "minutes": 5
   },
   {
    "date": "2026-11-06",
@@ -38,7 +41,28 @@
    "category": "security",
    "summary": "US prosecutors charged three suspects in Europe with using AI-assisted CEO impersonation to defraud victims of more than $100 million.",
    "relevance": 8,
-   "added": "2026-11-06T15:04:21+00:00"
+   "added": "2026-11-06T15:04:21+00:00",
+   "minutes": 2
+  },
+  {
+   "date": "2026-11-06",
+   "title": "QNAP says hackers breaching NAS devices in Plex2Shell attacks",
+   "url": "https://www.bleepingcomputer.com/news/security/qnap-says-hackers-breaching-nas-devices-in-plex2shell-attacks/",
+   "publisher": "BleepingComputer",
+   "category": "security",
+   "summary": "QNAP urges users to update Plex Media Server from the App Center because attackers are actively exploiting the Plex2Shell vulnerability chain to breach NAS devices.",
+   "relevance": 8,
+   "added": "2026-11-06T18:47:33+00:00"
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Hackers Target OpenSSH SSHole Flaw Within Hours of Disclosure, Gain Root on Honeypot",
+   "url": "https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html",
+   "publisher": "The Hacker News",
+   "category": "security",
+   "summary": "Attackers began exploiting OpenSSH flaw CVE-2026-123158 (CVSS 8.1, dubbed SSHole) within hours of disclosure, reportedly gaining root on a honeypot; affects musl builds with PAM disabled.",
+   "relevance": 8,
+   "added": "2026-11-06T18:47:33+00:00"
   },
   {
    "date": "2026-11-06",
@@ -48,7 +72,8 @@
    "category": "regulation",
    "summary": "The European Commission accused TikTok of failing to stop its recommendation algorithm from drawing users into harmful content rabbit holes.",
    "relevance": 7,
-   "added": "2026-11-06T13:18:38+00:00"
+   "added": "2026-11-06T13:18:38+00:00",
+   "minutes": 4
   },
   {
    "date": "2026-11-05",
@@ -57,7 +82,8 @@
    "publisher": "BleepingComputer",
    "category": "security",
    "summary": "A newly disclosed OpenSSH flaw lets attackers log into password-disabled Alpine and other musl-based Linux accounts by submitting an oversized password.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 0
   },
   {
    "date": "2026-11-05",
@@ -66,7 +92,8 @@
    "publisher": "Socket",
    "category": "sdlc",
    "summary": "GitHub will block pull_request_target workflows by default starting December 2 as an Actions security hardening measure.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 4
   },
   {
    "date": "2026-11-05",
@@ -76,7 +103,8 @@
    "category": "regulation",
    "summary": "Google, Meta and TikTok sued California in federal court to overturn a law barring psychologically exploitative features for users 15 and under.",
    "relevance": 7,
-   "added": "2026-11-06T13:34:32+00:00"
+   "added": "2026-11-06T13:34:32+00:00",
+   "minutes": 1
   },
   {
    "date": "2026-11-04",
@@ -85,7 +113,8 @@
    "publisher": "BleepingComputer",
    "category": "security",
    "summary": "Zyxel patched a zero-day in GS1900 switches that attackers exploited to compromise nearly 1,000 devices and steal configs and credentials.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 0
   },
   {
    "date": "2026-11-04",
@@ -94,7 +123,8 @@
    "publisher": "The Hacker News",
    "category": "security",
    "summary": "Two Xen flaws let a malicious guest VM read and write other VMs' memory, including dom0; patches are out with no known mitigation.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 3
   },
   {
    "date": "2026-11-04",
@@ -103,7 +133,8 @@
    "publisher": "OpenAI",
    "category": "security",
    "summary": "OpenAI built an autonomous pipeline that found, validated and patched 948 Linux kernel local privilege-escalation vulnerabilities.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 0
   },
   {
    "date": "2026-11-04",
@@ -112,7 +143,8 @@
    "publisher": "The Hacker News",
    "category": "security",
    "summary": "A Debian and Ubuntu APT flaw lets attackers who can modify downloads swap verified packages and run code as root.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 2
   },
   {
    "date": "2026-11-04",
@@ -122,7 +154,8 @@
    "category": "architecture",
    "summary": "Figma describes Nimbus, its platform for running tens of thousands of sandboxes to execute untrusted AI-generated code safely.",
    "relevance": 7,
-   "added": "2026-11-06T06:58:04+00:00"
+   "added": "2026-11-06T06:58:04+00:00",
+   "minutes": 10
   },
   {
    "date": "2026-11-03",
@@ -131,7 +164,8 @@
    "publisher": "The Hacker News",
    "category": "security",
    "summary": "Red Hat released kernel fixes for a 9.8-rated remote unauthenticated use-after-free RCE in Linux IPv4 TCP (CVE-2026-98432); Ubuntu fixes remain in opt-in testing.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 4
   },
   {
    "date": "2026-11-02",
@@ -140,7 +174,8 @@
    "publisher": "OpenAI",
    "category": "sdlc",
    "summary": "OpenAI built Pando, a Git-compatible backend, to handle repository scale driven by Codex-assisted development.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 0
   },
   {
    "date": "2026-10-31",
@@ -149,7 +184,8 @@
    "publisher": "The Hacker News",
    "category": "security",
    "summary": "CISA added two Ivanti Connect Secure flaws to its KEV catalog after attackers chained three vulnerabilities to gain unauthenticated root access.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 2
   },
   {
    "date": "2026-10-28",
@@ -158,7 +194,8 @@
    "publisher": "Google DeepMind",
    "category": "ai",
    "summary": "Google DeepMind announced Gemini 4 Carbon, its next frontier model.",
-   "relevance": 10
+   "relevance": 10,
+   "minutes": 4
   },
   {
    "date": "2026-10-28",
@@ -167,7 +204,8 @@
    "publisher": "Simon Willison",
    "category": "sdlc",
    "summary": "GitHub Octoverse 2026 reports merged pull requests tripled to 220 million monthly and commits to 7.38 billion monthly, attributed to agentic engineering.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 1
   },
   {
    "date": "2026-10-27",
@@ -176,7 +214,8 @@
    "publisher": "Google DeepMind",
    "category": "ai",
    "summary": "Google DeepMind announced Genie 4, a world model for real-time simulation.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 8
   },
   {
    "date": "2026-10-26",
@@ -185,7 +224,8 @@
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI released GPT-6.1 Terra, a model for fast computer use at scale.",
-   "relevance": 9
+   "relevance": 9,
+   "minutes": 0
   },
   {
    "date": "2026-10-26",
@@ -194,7 +234,8 @@
    "publisher": "Anthropic (community feed)",
    "category": "other",
    "summary": "Anthropic filed an S-1 registration statement with the SEC for a proposed initial public offering of Class A common stock.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 1
   },
   {
    "date": "2026-10-23",
@@ -203,7 +244,8 @@
    "publisher": "Simon Willison",
    "category": "ai",
    "summary": "Moonshot released Kimi K3.1 Pro on its API at $2/$10 per million input/output tokens, with open weights promised by November 2026.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 1
   },
   {
    "date": "2026-10-21",
@@ -212,7 +254,8 @@
    "publisher": "Huntress",
    "category": "security",
    "summary": "Two critical PHP remote code execution vulnerabilities, CVE-2026-109618 and CVE-2026-109619, leaked before patches were available.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 0
   },
   {
    "date": "2026-10-20",
@@ -221,7 +264,8 @@
    "publisher": "Cloudflare Blog",
    "category": "sdlc",
    "summary": "Cloudflare is collaborating on tsrs, a Rust port of TypeScript reported up to 8x faster with 70% less memory use.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 5
   },
   {
    "date": "2026-10-15",
@@ -230,7 +274,8 @@
    "publisher": "Hugging Face",
    "category": "ai",
    "summary": "Meta released Muse Spark Open, an open-weight frontier multimodal mixture-of-experts model, on Hugging Face.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 18
   },
   {
    "date": "2026-10-13",
@@ -239,7 +284,8 @@
    "publisher": "Google DeepMind",
    "category": "ai",
    "summary": "Google DeepMind released Gemini 4 Argon, positioned for complex problem solving.",
-   "relevance": 10
+   "relevance": 10,
+   "minutes": 10
   },
   {
    "date": "2026-10-07",
@@ -248,7 +294,8 @@
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI is rolling out GPT-6 globally in ChatGPT with an Intelligent UI offering faster responses and interactive visual experiences.",
-   "relevance": 10
+   "relevance": 10,
+   "minutes": 0
   },
   {
    "date": "2026-10-07",
@@ -257,7 +304,8 @@
    "publisher": "Anthropic (community feed)",
    "category": "ai",
    "summary": "Anthropic released Claude Haiku 5.5, a small model aimed at high-volume summarization, subagent and browser-use workloads.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 4
   }
  ],
  "weekly": {
@@ -287,5 +335,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T16:27:46+00:00"
+ "generated_at": "2026-11-06T18:47:46+00:00"
 }
