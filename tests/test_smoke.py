@@ -88,14 +88,16 @@ def test_phone_menu(browser):
     pg.keyboard.press("Escape")
     pg.locator("#theme").wait_for(state="hidden")  # after the closing fade
     # Tapping away closes the menu without opening the article underneath.
-    card, _ = first_card(pg)
-    card.scroll_into_view_if_needed()
+    pg.locator("a.card").nth(1).scroll_into_view_if_needed()
+    x, y = pg.evaluate("""() => { const r = [...document.querySelectorAll('a.card')].map(c => c.getBoundingClientRect())
+        .find(r => r.top > 300 && r.top + r.height / 2 < innerHeight); return [r.left + r.width / 2, r.top + r.height / 2]; }""")
     pg.tap("#menu-btn")
-    box = card.bounding_box()
-    pg.touchscreen.tap(box["x"] + 20, box["y"] + box["height"] / 2)
+    assert pg.evaluate("document.getElementById('menu').getBoundingClientRect().width") == 320  # full width
     pg.wait_for_timeout(300)
-    assert pg.locator("#theme").is_hidden() and not reading(pg)
-    card.tap()
+    pg.touchscreen.tap(x, y)
+    pg.locator("#theme").wait_for(state="hidden")
+    assert not reading(pg)
+    pg.touchscreen.tap(x, y)
     pg.wait_for_selector("#reader-body iframe")
     assert pg.problems == []
 
@@ -119,7 +121,7 @@ def test_wcag(browser, scheme):
         .filter(([, r]) => r.width && r.height && (r.width < 44 || r.height < 44)).map(([e, r]) => `${e.id || e.className} ${r.width}x${r.height}`)"""
     assert pg.evaluate(small) == []
     pg.tap("#menu-btn")
-    pg.wait_for_function("() => getComputedStyle(document.getElementById('menu')).opacity === '1'")  # mid-fade text fails contrast
+    pg.wait_for_function("() => !document.getElementById('menu').getAnimations().length")  # let the drawer finish opening
     assert violations() == [] and pg.evaluate(small) == []
     assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
     assert pg.problems == []
