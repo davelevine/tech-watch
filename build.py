@@ -25,6 +25,7 @@ KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
 FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries published longer ago than this
 PER_FEED = int(os.environ.get("PER_FEED", 10))     # newest N entries per feed per run (caps huge feeds)
 MIN_RELEVANCE = 3     # 1-5; below this the item is dropped
+DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' headlines
 DAILY_MAX = 8         # keep at most the N most relevant items per day (~5/day on average)
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20
@@ -117,7 +118,12 @@ For each item return:
 - relevance: 1-5. 5 = major release, incident or shift practitioners must know about;
   3 = genuinely useful; 1 = marketing, hiring, events, webinars, customer stories, off-topic.
 - summary: one plain factual sentence (max 30 words) saying what happened. No hype, no "this article".
-Return JSON: {{"items": [{{"id", "category", "relevance", "summary"}}, ...]}} covering every input id."""
+- duplicate_of: if the item reports the same specific event as a "recent" headline, that headline copied
+  exactly; if it repeats an EARLIER item in this batch, that item's id as a string (e.g. "2"); else null.
+  Coverage of the same launch, release or incident by a different outlet IS a duplicate, even from another
+  angle. A different version number, or a later development (a patch, a follow-up attack, new findings) is
+  NOT. When unsure, null.
+Return JSON: {{"items": [{{"id", "category", "relevance", "summary", "duplicate_of"}}, ...]}} covering every input id."""
 
 CLASSIFY_SCHEMA = {
     "type": "object",
@@ -128,17 +134,20 @@ CLASSIFY_SCHEMA = {
             "category": {"type": "string", "enum": CATEGORIES},
             "relevance": {"type": "integer"},
             "summary": {"type": "string"},
+            "duplicate_of": {"type": ["string", "null"]},
         },
-        "required": ["id", "category", "relevance", "summary"],
+        "required": ["id", "category", "relevance", "summary", "duplicate_of"],
     }}},
     "required": ["items"],
 }
 
 
-def classify(batch):
-    """Returns {url: result} for the batch; items the model skipped are simply absent."""
-    payload = [{"id": n, "title": i["title"], "publisher": i["publisher"], "excerpt": i["excerpt"]}
-               for n, i in enumerate(batch)]
+def classify(batch, recent):
+    """Returns {url: result} for the batch; items the model skipped are simply absent.
+    recent: headlines already on the site, so the model can flag repeats of them."""
+    payload = {"recent": recent, "items": [
+        {"id": n, "title": i["title"], "publisher": i["publisher"], "excerpt": i["excerpt"]}
+        for n, i in enumerate(batch)]}
     res = llm(CLASSIFY_PROMPT, json.dumps(payload), CLASSIFY_SCHEMA)
     return {batch[r["id"]]["url"]: r for r in res if 0 <= r["id"] < len(batch)}
 
@@ -183,6 +192,20 @@ def rss(items):
     return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Tech Watch</title>'
             f"<link>{SITE_URL}/</link><description>AI, security and architecture news, summarized.</description>"
             f"{entries}</channel></rss>\n")
+
+
+def norm(title):
+    return " ".join(title.lower().split())
+
+
+def repeats(dup_of, n, covered_ids, recent_titles):
+    """True if batch item n validly points at a recent headline (quoted exactly), or at an earlier batch item
+    whose story is already covered (kept, or itself a repeat). Batch refs must point backwards, so every chain
+    ends at a story that's on the site; misquotes, self/forward refs and low-relevance targets are ignored."""
+    dup_of = str(dup_of or "").strip()
+    if dup_of.isdigit():
+        return int(dup_of) < n and int(dup_of) in covered_ids
+    return bool(dup_of) and norm(dup_of) in recent_titles
 
 
 def cap_per_day(items):
@@ -237,20 +260,27 @@ def main():
     print(f"{len(feeds)} feeds, {sum(r is None for r in fetched.values())} failed, {len(new)} new items")
 
     batches = [new[n:n + BATCH] for n in range(0, len(new), BATCH)]
+    week_ago = (today - timedelta(days=DEDUPE_DAYS)).isoformat()
+    recent = [i["title"] for i in data["items"] if i["date"] >= week_ago]
     failed = 0
     for batch in batches:
         try:
-            results = classify(batch)
+            results = classify(batch, recent)
         except Exception as e:  # leave the batch unseen so the next run retries it
             print(f"::warning::classify failed: {e}")
             failed += 1
             continue
-        for item in batch:
+        recent_titles, covered = {norm(t) for t in recent}, set()
+        for n, item in enumerate(batch):
             r = results.get(item["url"])
             if not r:
                 continue
             seen[item["url"]] = item["date"]
-            if r["relevance"] >= MIN_RELEVANCE:
+            if repeats(r.get("duplicate_of"), n, covered, recent_titles):
+                covered.add(n)
+            elif r["relevance"] >= MIN_RELEVANCE:
+                covered.add(n)
+                recent.append(item["title"])
                 data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
                                      | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"]})
 
