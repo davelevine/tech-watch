@@ -52,7 +52,8 @@
    "category": "security",
    "summary": "QNAP urges users to update Plex Media Server from the App Center because attackers are actively exploiting the Plex2Shell vulnerability chain to breach NAS devices.",
    "relevance": 8,
-   "added": "2026-11-06T18:47:33+00:00"
+   "added": "2026-11-06T18:47:33+00:00",
+   "minutes": 0
   },
   {
    "date": "2026-11-06",
@@ -62,7 +63,18 @@
    "category": "security",
    "summary": "Attackers began exploiting OpenSSH flaw CVE-2026-123158 (CVSS 8.1, dubbed SSHole) within hours of disclosure, reportedly gaining root on a honeypot; affects musl builds with PAM disabled.",
    "relevance": 8,
-   "added": "2026-11-06T18:47:33+00:00"
+   "added": "2026-11-06T18:47:33+00:00",
+   "minutes": 2
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Shai-Hulud Descendant Surfaces in Malicious Ruby Gem That Steals Credentials and Poisons AI Tools",
+   "url": "https://socket.dev/blog/shai-hulud-descendant-malicious-ruby-gem",
+   "publisher": "Socket",
+   "category": "security",
+   "summary": "A malicious Ruby gem carries a Shai-Hulud-descendant worm that steals credentials on install, poisons AI coding tools, and can wipe files if the stolen GitHub token is revoked.",
+   "relevance": 8,
+   "added": "2026-11-06T20:17:50+00:00"
   },
   {
    "date": "2026-11-06",
@@ -335,5 +347,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T18:47:46+00:00"
+ "generated_at": "2026-11-06T20:17:51+00:00"
 }
