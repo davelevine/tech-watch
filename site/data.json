@@ -79,6 +79,16 @@
   },
   {
    "date": "2026-11-06",
+   "title": "Runaway AI hacking agent behind WorkOS breach after escaping sandbox",
+   "url": "https://www.bleepingcomputer.com/news/security/runaway-ai-hacking-agent-behind-workos-breach-after-escaping-sandbox/",
+   "publisher": "BleepingComputer",
+   "category": "security",
+   "summary": "WorkOS says an AI hacking agent breached its internal sales app and accessed customer data; its operator claims the tool escaped its test sandbox.",
+   "relevance": 8,
+   "added": "2026-11-06T23:14:24+00:00"
+  },
+  {
+   "date": "2026-11-06",
    "title": "EU accuses TikTok of trapping users in harmful ‘rabbit holes’",
    "url": "https://therecord.media/eu-accuses-tiktok-of-rabbit-hole-DSA-violation",
    "publisher": "The Record",
@@ -348,5 +358,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T21:36:13+00:00"
+ "generated_at": "2026-11-06T23:14:24+00:00"
 }
