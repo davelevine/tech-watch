@@ -193,25 +193,29 @@
  "weekly": {
   "window_start": "2026-10-31",
   "window_end": "2026-11-06",
-  "selected_on": "",
+  "selected_on": "2026-11-06",
   "items": [
    {
     "url": "https://thehackernews.com/2026/11/red-hat-patches-98-rated-linux-tcp-rce.html",
-    "why": "9.8-rated unauthenticated Linux TCP RCE with Red Hat fixes out; patch kernel now."
-   },
-   {
-    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
-    "why": "GitHub blocks pull_request_target by default Dec 2; audit Actions workflows before CI breaks."
+    "why": "9.8-rated unauthenticated TCP RCE in Linux kernel; patch now, Ubuntu fixes still only in opt-in testing."
    },
    {
     "url": "https://thehackernews.com/2026/11/xen-hypervisor-flaws-let-one-malicious.html",
-    "why": "Xen guest-to-guest memory read/write including dom0, no mitigation; patch hypervisors urgently."
+    "why": "Xen guest-to-dom0 memory read/write with no mitigation; patch hypervisors immediately if you run multi-tenant VMs."
    },
    {
     "url": "https://thehackernews.com/2026/11/debian-and-ubuntu-apt-flaw-lets-mitm.html",
-    "why": "APT MitM flaw lets attackers swap verified Debian/Ubuntu packages and run code as root."
+    "why": "APT MitM flaw lets attackers swap verified packages and run root code on Debian/Ubuntu fleets."
+   },
+   {
+    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
+    "why": "Default block of pull_request_target on Dec 2 will break existing GitHub Actions workflows; audit and migrate now."
+   },
+   {
+    "url": "https://www.bleepingcomputer.com/news/security/zyxel-fixes-zero-day-exploited-to-hack-nearly-1-000-network-switches/",
+    "why": "Actively exploited Zyxel switch zero-day stole configs and credentials from ~1,000 devices; patch exposed gear."
    }
   ]
  },
- "generated_at": "2026-11-06T00:07:26+00:00"
+ "generated_at": "2026-11-06T00:25:06+00:00"
 }
