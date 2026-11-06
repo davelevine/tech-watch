@@ -289,6 +289,36 @@ def add_reading_times(items, limit=30):
                 item["minutes"] = minutes
 
 
+def run_summary(feeds, feeds_failed, new, scores, kept, repeated, dead):
+    """Markdown for the Actions run page: what this build saw, kept and nearly kept."""
+    title = {i["url"]: i for i in new}
+    scored = {u: r for u, r in scores.items() if r}
+    near = sorted(((r, title[u]) for u, r in scored.items() if r["relevance"] == MIN_RELEVANCE.get(r["category"], 8) - 1),
+                  key=lambda x: (x[0]["category"], x[1]["title"]))
+    row = lambda r, i: f"| {r['category']} | {r['relevance']} | {i['publisher']} | [{i['title']}]({i['url']}) |"
+    lines = [
+        "## Tech Watch build", "",
+        f"**Feeds:** {feeds} fetched, {feeds_failed} failed · **New stories:** {len(new)} · **Scored:** {len(scored)}"
+        f" ({len(new) - len(scored)} failed, retried next run) · **Kept:** {len(kept)} · **Dropped as repeats:** {len(repeated)}", "",
+    ]
+    if kept:
+        lines += ["### Kept", "", "| Category | Score | Source | Story |", "|---|---|---|---|", *(row(r, i) for i, r in kept), ""]
+    if repeated:
+        lines += ["### Dropped as repeats", "", *(f"- {i['publisher']}: {i['title']}" for i in repeated), ""]
+    if near:
+        lines += ["### One point under the bar", "", "| Category | Score | Source | Story |", "|---|---|---|---|", *(row(r, i) for r, i in near), ""]
+    if dead:
+        lines += ["### Dead feeds", "", *(f"- {u}" for u in dead), ""]
+    return "\n".join(lines) + "\n"
+
+
+def write_summary(*args):
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if path:
+        with open(path, "a") as f:
+            f.write(run_summary(*args))
+
+
 def update_feed_health(health, results, today):
     """health: {feed_url: first_failure_date}. Returns feeds dead for DEAD_AFTER_DAYS+."""
     for url, ok in results.items():
@@ -344,6 +374,7 @@ def main():
         if r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
             passing.append((item | {"summary": r["summary"]}, r))
 
+    kept, repeated = [], []
     for n0 in range(0, len(passing), BATCH):
         chunk = passing[n0:n0 + BATCH]
         try:
@@ -358,7 +389,9 @@ def main():
             repeat = repeats(dups.get(item["url"]), n, covered, recent_titles)
             covered.add(n)
             if repeat:
+                repeated.append(item)
                 continue
+            kept.append((item, r))
             recent.append(item["title"])
             data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
                                  | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"],
@@ -382,6 +415,8 @@ def main():
     (SITE / "rss.xml").write_text(rss(data["items"]))
     STATE.write_text(json.dumps(state, indent=1, sort_keys=True) + "\n")
     (ROOT / "dead-feeds.txt").write_text("".join(f"{u}\n" for u in dead))
+
+    write_summary(len(feeds), sum(r is None for r in fetched.values()), new, scores, kept, repeated, dead)
 
     if new and failed == len(new):
         sys.exit("every scoring call failed; check OLLAMA_API_KEY / Ollama Cloud")
