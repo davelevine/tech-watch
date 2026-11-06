@@ -6,9 +6,12 @@
 
 <div align="center">
 
-<img src="site/favicon.svg" alt="Triage" width="96">
-
-# Triage
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/wordmark-dark.svg">
+    <img src=".github/wordmark-light.svg" alt="Triage" width="200">
+  </picture>
+</h1>
 
 The week's tech news, minus the noise.
 
