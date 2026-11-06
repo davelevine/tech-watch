@@ -111,6 +111,11 @@ def test_swipe_back_on_a_phone(browser):
     card.tap()
     pg.wait_for_selector("#reader-body iframe")
     pg.frame_locator("#reader-body iframe").locator("p").first.wait_for()
+    # Wait for the slide-in to finish: until then the touch lands on the (inert) feed behind it.
+    for _ in range(50):
+        if pg.evaluate("new DOMMatrix(getComputedStyle(document.getElementById('reader')).transform).m41") == 0:
+            break
+        pg.wait_for_timeout(100)
     pg.evaluate("window.__tw = []; addEventListener('message', e => __tw.push(e.data && e.data.tw))")
     cdp = pg.context.new_cdp_session(pg)
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": 80, "y": 600}]})
