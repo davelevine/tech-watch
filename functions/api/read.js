@@ -1,5 +1,5 @@
 // Reader view: fetches one article that's on the site and returns its main content.
-// Behind Cloudflare Access (see README). Nothing is stored or cached.
+// Nothing is stored or cached, and only articles listed on the site are fetched.
 import { Readability } from '@mozilla/readability';
 import { parseHTML } from 'linkedom';
 
