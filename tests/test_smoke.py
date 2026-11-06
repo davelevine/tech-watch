@@ -106,6 +106,25 @@ def test_wide_screens_keep_the_controls_in_the_header(browser):
     assert pg.problems == []
 
 
+@pytest.mark.parametrize("scheme", ["dark", "light"])
+def test_wcag(browser, scheme):
+    from axe_playwright_python.sync_playwright import Axe
+    tags = {"runOnly": {"type": "tag", "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]}}
+    pg = open_site(browser, viewport={"width": 412, "height": 915}, has_touch=True, is_mobile=True, color_scheme=scheme)
+    def violations():
+        return [(v["id"], v["nodes"][0]["html"][:80]) for v in Axe().run(pg, options=tags).response["violations"]]
+    assert violations() == []
+    # Every control on a phone is at least 44px. The info button reaches it through ::after, which a rect can't see.
+    small = """() => [...document.querySelectorAll('a, button, input')].filter(e => e.id !== 'info').map(e => [e, e.getBoundingClientRect()])
+        .filter(([, r]) => r.width && r.height && (r.width < 44 || r.height < 44)).map(([e, r]) => `${e.id || e.className} ${r.width}x${r.height}`)"""
+    assert pg.evaluate(small) == []
+    pg.tap("#menu-btn")
+    pg.wait_for_function("() => getComputedStyle(document.getElementById('menu')).opacity === '1'")  # mid-fade text fails contrast
+    assert violations() == [] and pg.evaluate(small) == []
+    assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
+    assert pg.problems == []
+
+
 def test_reader_and_frame_relay_run_under_csp(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     card, title = first_card(pg)
