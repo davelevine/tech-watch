@@ -1118,19 +1118,31 @@
   }
  ],
  "weekly": {
-  "window_start": "2026-10-30",
-  "window_end": "2026-11-05",
-  "selected_on": "",
+  "window_start": "2026-10-31",
+  "window_end": "2026-11-06",
+  "selected_on": "2026-11-06",
   "items": [
    {
-    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
-    "why": "GitHub blocks pull_request_target workflows by default Dec 2; audit CI pipelines now to avoid breakage."
+    "url": "https://thehackernews.com/2026/11/red-hat-patches-98-rated-linux-tcp-rce.html",
+    "why": "9.8-rated unauthenticated Linux TCP RCE with Red Hat fixes out; patch kernel now."
    },
    {
-    "url": "https://www.bleepingcomputer.com/news/security/zyxel-fixes-zero-day-exploited-to-hack-nearly-1-000-network-switches/",
-    "why": "Zyxel GS1900 zero-day exploited on ~1,000 switches; patch firmware and rotate exposed credentials."
+    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
+    "why": "GitHub blocks pull_request_target by default Dec 2; audit Actions workflows before CI breaks."
+   },
+   {
+    "url": "https://thehackernews.com/2026/11/critical-rails-flaw-lets-attackers.html",
+    "why": "Critical Rails Active Storage flaw allows unauthenticated arbitrary file writes; upgrade to 8.1.4.1/8.0.5.2."
+   },
+   {
+    "url": "https://thehackernews.com/2026/11/xen-hypervisor-flaws-let-one-malicious.html",
+    "why": "Xen guest-to-guest memory read/write including dom0, no mitigation; patch hypervisors urgently."
+   },
+   {
+    "url": "https://thehackernews.com/2026/11/debian-and-ubuntu-apt-flaw-lets-mitm.html",
+    "why": "APT MitM flaw lets attackers swap verified Debian/Ubuntu packages and run code as root."
    }
   ]
  },
- "generated_at": "2026-11-05T23:27:12+00:00"
+ "generated_at": "2026-11-06T00:07:26+00:00"
 }
