@@ -24,9 +24,11 @@ CATEGORIES = ["ai", "security", "architecture", "sdlc", "regulation", "other"]
 KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
 FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries published longer ago than this
 PER_FEED = int(os.environ.get("PER_FEED", 10))     # newest N entries per feed per run (caps huge feeds)
-MIN_RELEVANCE = 3     # 1-5; below this the item is dropped
+# 1-10 relevance an item needs to be kept. The busy categories need more; the quieter ones score lower
+# even for good pieces (a strong architecture write-up rarely rates like an exploited zero-day).
+MIN_RELEVANCE = {"ai": 8, "security": 8, "architecture": 7, "sdlc": 7, "regulation": 7, "other": 7}
 DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' headlines
-DAILY_MAX = 8         # keep at most the N most relevant items per day (~5/day on average)
+DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the real filtering
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20
 UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
@@ -115,8 +117,16 @@ CLASSIFY_PROMPT = f"""You curate a tech news digest for a senior infrastructure/
 interested in AI, security, architecture, software delivery (sdlc) and tech regulation.
 For each item return:
 - category: one of {", ".join(CATEGORIES)}
-- relevance: 1-5. 5 = major release, incident or shift practitioners must know about;
-  3 = genuinely useful; 1 = marketing, hiring, events, webinars, customer stories, off-topic.
+- relevance: 1-10, judged within the item's category, for a reader who follows that category closely
+  (an architecture piece is compared with other architecture news, not with security incidents):
+  10 = a once-a-month event the whole field will discuss: a frontier model launch, a mass-exploited
+       critical flaw, a landmark regulation;
+  8-9 = clearly one of this week's notable stories: a significant release, an actively exploited flaw in
+       widely used software, a major outage or postmortem with real lessons, a substantive research result;
+  6-7 = solid but routine: product updates, typical CVE advisories, vendor how-tos, narrow research;
+  4-5 = minor, incremental or niche;
+  1-3 = marketing, hiring, events, webinars, customer stories, off-topic.
+  Most items are 4-7; reserve 8+ for roughly the top tenth of a day's news.
 - summary: one plain factual sentence (max 30 words) saying what happened. No hype, no "this article".
 - duplicate_of: if the item reports the same specific event as a "recent" headline, that headline copied
   exactly; if it repeats an EARLIER item in this batch, that item's id as a string (e.g. "2"); else null.
@@ -214,7 +224,7 @@ def cap_per_day(items):
     for i in items:
         by_day.setdefault(i["date"], []).append(i)
     return [i for day in sorted(by_day, reverse=True)
-            for i in sorted(by_day[day], key=lambda i: -i.get("relevance", MIN_RELEVANCE))[:DAILY_MAX]]
+            for i in sorted(by_day[day], key=lambda i: -i.get("relevance", 0))[:DAILY_MAX]]
 
 
 def update_feed_health(health, results, today):
@@ -278,7 +288,7 @@ def main():
             seen[item["url"]] = item["date"]
             if repeats(r.get("duplicate_of"), n, covered, recent_titles):
                 covered.add(n)
-            elif r["relevance"] >= MIN_RELEVANCE:
+            elif r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
                 covered.add(n)
                 recent.append(item["title"])
                 data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
