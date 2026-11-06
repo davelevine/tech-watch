@@ -6,6 +6,7 @@ A set-it-and-forget-it tech news digest at [tech.levine.io](https://tech.levine.
 
 - How it works
 - Adding or removing feeds
+- The reader
 - Running it locally
 - Setup
 
@@ -29,6 +30,14 @@ It looks after itself: a feed that's failed every fetch for 14 days gets listed 
 
 Edit `feeds.opml`; each feed is one `<outline>` line. The `text` attribute is the publisher name shown on the site. Some big publishers (Anthropic, Cohere, Reuters) don't publish RSS; Anthropic comes from a community-maintained feed, and the Hacker News 300+ feed catches most of the rest.
 
+## The reader
+
+When you're signed in, clicking an article opens it in a reader panel instead of a new tab. `functions/api/read.js`, a Cloudflare Pages Function, fetches the page on demand and extracts the article with Mozilla's Readability, the same approach as Firefox's reader view. If a site won't give up its text but allows framing, the panel shows the original page instead; otherwise you get a link to read it on the site. Ctrl/Cmd-click and middle-click still open the original.
+
+Nothing is stored or cached: responses are `no-store`, and only URLs already on the site are fetched, so it can't be used as an open proxy. Extracted HTML is cleaned on the server (no scripts, frames, styles or event handlers) and rendered in a sandboxed frame that can't run scripts.
+
+`/api/*` sits behind Cloudflare Access (`tech_watch_reader` in homelab-iac), so the reader is yours alone and the rest of the site stays public. To sign in, visit `/api/login`. After that, a book icon in the header brings you back to it whenever the 24-hour session lapses.
+
 ## Running it locally
 
 ```bash
@@ -38,10 +47,19 @@ OLLAMA_API_KEY=... .venv/bin/python build.py
 python3 -m http.server -d site 8000
 ```
 
+The reader needs the Pages runtime, so run it with Wrangler instead of `http.server` (Access isn't in front locally, so the reader is always on):
+
+```bash
+npm ci
+node --test 'tests/*.test.js'
+npx wrangler pages dev site
+```
+
 The build writes real data, so don't commit a local run's output unless you mean to.
 
 ## Setup
 
 - **Secret:** `OLLAMA_API_KEY` in the repo's Actions secrets.
 - **Cloudflare Pages:** project `levine-tech-watch` (`tech-watch.pages.dev` is taken), connected to this repo, production branch `main`, no build command, output directory `site`.
+- **Reader access:** the `tech_watch_reader` Access app (homelab-iac `zero_trust_apps.yaml`) covers `/api` on `tech.levine.io`, `levine-tech-watch.pages.dev` and its preview hosts.
 - **Domain:** `tech.levine.io` is a proxied CNAME to `levine-tech-watch.pages.dev`, managed in [homelab-iac](https://github.com/davelevine/homelab-iac) (`terraform/modules/cloudflare/data/dns_zones.yaml`), and added as a custom domain on the Pages project.
