@@ -1,8 +1,8 @@
 <!--markdownlint-disable-->
 
 [![Build](https://github.com/davelevine/triage/actions/workflows/build.yml/badge.svg)](https://github.com/davelevine/triage/actions/workflows/build.yml)
-[![Site](https://img.shields.io/badge/tech.levine.io-live-73dbcc?labelColor=2c3e50)](https://tech.levine.io)
-[![RSS](https://img.shields.io/badge/RSS-feed-ebb077?logo=rss&logoColor=ebb077&labelColor=2c3e50)](https://tech.levine.io/rss.xml)
+[![Site](https://img.shields.io/badge/triage.levine.io-live-73dbcc?labelColor=2c3e50)](https://triage.levine.io)
+[![RSS](https://img.shields.io/badge/RSS-feed-ebb077?logo=rss&logoColor=ebb077&labelColor=2c3e50)](https://triage.levine.io/rss.xml)
 
 <div align="center">
 
@@ -196,7 +196,7 @@ The knobs live at the top of [`build.py`](build.py):
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
 | `TRIAGE_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
 | `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
-| `SITE_URL` | `https://tech.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
+| `SITE_URL` | `https://triage.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
 
 How often it runs is the `cron` line in [`build.yml`](.github/workflows/build.yml).
 
