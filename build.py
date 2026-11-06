@@ -128,12 +128,17 @@ For each item return:
   1-3 = marketing, hiring, events, webinars, customer stories, off-topic.
   Most items are 4-7; reserve 8+ for roughly the top tenth of a day's news.
 - summary: one plain factual sentence (max 30 words) saying what happened. No hype, no "this article".
-- duplicate_of: if the item reports the same specific event as a "recent" headline, that headline copied
-  exactly; if it repeats an EARLIER item in this batch, that item's id as a string (e.g. "2"); else null.
-  Coverage of the same launch, release or incident by a different outlet IS a duplicate, even from another
-  angle. A different version number, or a later development (a patch, a follow-up attack, new findings) is
-  NOT. When unsure, null.
-Return JSON: {{"items": [{{"id", "category", "relevance", "summary", "duplicate_of"}}, ...]}} covering every input id."""
+Return JSON: {{"items": [{{"id", "category", "relevance", "summary"}}, ...]}} covering every input id."""
+
+# A separate call, so the recent headlines can't skew relevance: shown alongside scoring, the model
+# graded new items against the week's biggest stories and scored borderline ones a point low.
+REPEATS_PROMPT = """You check a batch of tech news items for repeats of stories already on a digest.
+For each item return duplicate_of: if it reports the same specific event as a "recent" headline, that
+headline copied exactly; if it repeats an EARLIER item in this batch, that item's id as a string (e.g. "2");
+else null. Coverage of the same launch, release or incident by a different outlet IS a duplicate, even from
+another angle. A different version number, or a later development (a patch, a follow-up attack, new findings)
+is NOT. When unsure, null.
+Return JSON: {"items": [{"id", "duplicate_of"}, ...]} covering every input id."""
 
 CLASSIFY_SCHEMA = {
     "type": "object",
@@ -144,22 +149,38 @@ CLASSIFY_SCHEMA = {
             "category": {"type": "string", "enum": CATEGORIES},
             "relevance": {"type": "integer"},
             "summary": {"type": "string"},
-            "duplicate_of": {"type": ["string", "null"]},
         },
-        "required": ["id", "category", "relevance", "summary", "duplicate_of"],
+        "required": ["id", "category", "relevance", "summary"],
+    }}},
+    "required": ["items"],
+}
+
+REPEATS_SCHEMA = {
+    "type": "object",
+    "properties": {"items": {"type": "array", "items": {
+        "type": "object",
+        "properties": {"id": {"type": "integer"}, "duplicate_of": {"type": ["string", "null"]}},
+        "required": ["id", "duplicate_of"],
     }}},
     "required": ["items"],
 }
 
 
-def classify(batch, recent):
-    """Returns {url: result} for the batch; items the model skipped are simply absent.
-    recent: headlines already on the site, so the model can flag repeats of them."""
-    payload = {"recent": recent, "items": [
-        {"id": n, "title": i["title"], "publisher": i["publisher"], "excerpt": i["excerpt"]}
-        for n, i in enumerate(batch)]}
+def classify(batch):
+    """Returns {url: result} for the batch; items the model skipped are simply absent."""
+    payload = [{"id": n, "title": i["title"], "publisher": i["publisher"], "excerpt": i["excerpt"]}
+               for n, i in enumerate(batch)]
     res = llm(CLASSIFY_PROMPT, json.dumps(payload), CLASSIFY_SCHEMA)
     return {batch[r["id"]]["url"]: r for r in res if 0 <= r["id"] < len(batch)}
+
+
+def find_repeats(batch, recent):
+    """Returns {url: duplicate_of} for items the model flags; recent: headlines already on the site."""
+    payload = {"recent": recent, "items": [
+        {"id": n, "title": i["title"], "publisher": i["publisher"], "summary": i.get("summary", i["excerpt"])}
+        for n, i in enumerate(batch)]}
+    res = llm(REPEATS_PROMPT, json.dumps(payload), REPEATS_SCHEMA)
+    return {batch[r["id"]]["url"]: r.get("duplicate_of") for r in res if 0 <= r["id"] < len(batch)}
 
 
 WEEKLY_PROMPT = """From this week's tech news, pick the 5 items a busy senior engineer most needs to know about.
@@ -275,25 +296,38 @@ def main():
     failed = 0
     for batch in batches:
         try:
-            results = classify(batch, recent)
+            results = classify(batch)
         except Exception as e:  # leave the batch unseen so the next run retries it
             print(f"::warning::classify failed: {e}")
             failed += 1
             continue
-        recent_titles, covered = {norm(t) for t in recent}, set()
-        for n, item in enumerate(batch):
+        passing = []
+        for item in batch:
             r = results.get(item["url"])
             if not r:
                 continue
             seen[item["url"]] = item["date"]
-            if repeats(r.get("duplicate_of"), n, covered, recent_titles):
-                covered.add(n)
-            elif r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
-                covered.add(n)
-                recent.append(item["title"])
-                data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
-                                     | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"],
-                                        "added": now().isoformat(timespec="seconds")})  # drives "new since last visit"
+            if r["relevance"] >= MIN_RELEVANCE.get(r["category"], 8):
+                passing.append((item | {"summary": r["summary"]}, r))
+        if not passing:
+            continue
+        try:
+            dups = find_repeats([i for i, _ in passing], recent)
+        except Exception as e:  # unsee them so the next run scores and checks them again
+            print(f"::warning::repeat check failed: {e}")
+            for item, _ in passing:
+                seen.pop(item["url"], None)
+            continue
+        recent_titles, covered = {norm(t) for t in recent}, set()
+        for n, (item, r) in enumerate(passing):
+            repeat = repeats(dups.get(item["url"]), n, covered, recent_titles)
+            covered.add(n)
+            if repeat:
+                continue
+            recent.append(item["title"])
+            data["items"].append({k: item[k] for k in ("date", "title", "url", "publisher")}
+                                 | {"category": r["category"], "summary": r["summary"], "relevance": r["relevance"],
+                                    "added": now().isoformat(timespec="seconds")})  # drives "new since last visit"
 
     keep = (today - timedelta(days=KEEP_DAYS)).isoformat()
     data["items"] = cap_per_day([i for i in data["items"] if i["date"] >= keep])
