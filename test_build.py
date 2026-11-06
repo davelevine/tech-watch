@@ -1,3 +1,4 @@
+import json
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta, timezone
 
@@ -53,3 +54,25 @@ def test_cap_per_day_keeps_most_relevant():
     assert len(today) == build.DAILY_MAX
     assert min(i["relevance"] for i in today) >= max(i["relevance"] for i in dropped)
     assert out[-1]["url"] == "https://x.test/old"
+
+
+def test_classify_sends_recent_headlines(monkeypatch):
+    sent = {}
+    def fake_llm(system, user, schema):
+        sent.update(json.loads(user))
+        return [{"id": 0, "category": "ai", "relevance": 4, "summary": "s", "duplicate_of": "Old headline"}]
+    monkeypatch.setattr(build, "llm", fake_llm)
+    out = build.classify([{"url": "https://x.test/a", "title": "T", "publisher": "P", "excerpt": "E"}], ["Old headline"])
+    assert sent["recent"] == ["Old headline"] and sent["items"][0]["title"] == "T"
+    assert out["https://x.test/a"]["duplicate_of"] == "Old headline"
+
+
+def test_repeats_always_leaves_one_copy():
+    recent = {build.norm("OpenSSH flaw  lets attackers in")}
+    assert build.repeats("openssh flaw lets attackers in", 0, set(), recent)  # quoted, case/space-insensitive
+    assert not build.repeats("OpenSSH flaw", 0, set(), recent)              # misquote is ignored
+    assert build.repeats("0", 3, {0}, set())                                # earlier, covered batch item
+    assert not build.repeats("0", 3, set(), set())                          # earlier item not covered
+    assert not build.repeats("3", 3, {3}, set())                            # points at itself
+    assert not build.repeats("5", 3, {5}, set())                            # points forward
+    assert not build.repeats(None, 3, set(), set())
