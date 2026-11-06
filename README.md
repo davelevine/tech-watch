@@ -32,9 +32,9 @@ Edit `feeds.opml`; each feed is one `<outline>` line. The `text` attribute is th
 
 ## The reader
 
-Clicking an article opens it in a reader panel instead of a new tab. `functions/api/read.js`, a Cloudflare Pages Function, fetches the page on demand and extracts the article with Mozilla's Readability, the same approach as Firefox's reader view. If a site won't give up its text but allows framing, the panel shows the original page instead; otherwise you get a link to read it on the site. Ctrl/Cmd-click and middle-click still open the original.
+Clicking an article opens it in a reader panel instead of a new tab. `functions/api/read.js`, a Cloudflare Pages Function, fetches the page on demand and extracts the article with Mozilla's Readability, the same approach as Firefox's reader view. If a site won't give up its text but allows framing, the panel shows the original page instead; otherwise you get a link to read it on the site. Ctrl/Cmd-click and middle-click still open the original. On a phone, swipe right to close the reader: it follows your finger and the feed slides back in underneath, like a native back gesture. Cmd/Ctrl+K jumps to search from anywhere, including from inside an article.
 
-Nothing is stored or cached: responses are `no-store`, and only URLs already on the site are fetched, so it can't be used as an open proxy. Extracted HTML is cleaned on the server (no scripts, frames, styles or event handlers) and rendered in a sandboxed frame that can't run scripts. There's no login; the reader works for every visitor.
+Nothing is stored or cached: responses are `no-store`, and only URLs already on the site are fetched, so it can't be used as an open proxy. Extracted HTML is cleaned on the server (no scripts, frames, styles or event handlers) and rendered in a sandboxed frame with no access to the page. The only script that frame may run is the site's own swipe and keyboard relay, allowed by a per-render nonce; the article's scripts are stripped before it gets there. There's no login; the reader works for every visitor.
 
 ## Running it locally
 
