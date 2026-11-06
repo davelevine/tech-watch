@@ -56,7 +56,7 @@ function renderPage() {
       <div class="card-body">
         <div class="card-title">${highlight(i.title, q)}</div>
         ${i.summary ? `<p class="card-summary">${highlight(i.summary, q)}</p>` : ''}
-        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span></div>
+        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span>${i.minutes ? `<span>·</span><span class="card-time">${i.minutes} min read</span>` : ''}</div>
       </div>
       <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')

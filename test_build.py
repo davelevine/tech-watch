@@ -102,3 +102,18 @@ def test_score_each_reports_failures_as_none(monkeypatch):
         raise RuntimeError("402")
     monkeypatch.setattr(build, "classify", boom)
     assert build.score_each([{"url": "https://x.test/a", "title": "T", "publisher": "P", "excerpt": "E"}]) == {"https://x.test/a": None}
+
+
+def test_reading_times_use_the_sites_reader(monkeypatch):
+    import io
+    pages = {"https://x.test/long": {"content": "<p>" + "word " * 690 + "</p>"},   # 690 words -> 3 min
+             "https://x.test/blocked": {"frameable": False}}                       # no content -> 0, not retried
+    def fake_open(req, timeout):
+        target = build.urllib.parse.unquote(req.full_url.split("url=")[1])
+        if target not in pages:
+            raise build.urllib.error.HTTPError(req.full_url, 404, "not live yet", {}, None)
+        return io.BytesIO(json.dumps(pages[target]).encode())
+    monkeypatch.setattr(build.urllib.request, "urlopen", fake_open)
+    items = [{"url": "https://x.test/long"}, {"url": "https://x.test/blocked"}, {"url": "https://x.test/new"}, {"url": "https://x.test/done", "minutes": 5}]
+    build.add_reading_times(items)
+    assert [i.get("minutes") for i in items] == [3, 0, None, 5]
