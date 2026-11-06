@@ -6,7 +6,7 @@
 
 <div align="center">
 
-<img src="site/icon-512.png" alt="Triage" width="96">
+<img src="site/favicon.svg" alt="Triage" width="96">
 
 # Triage
 
