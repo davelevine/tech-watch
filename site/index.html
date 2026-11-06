@@ -78,7 +78,7 @@
   .palette-list .palette-empty { justify-content: center; padding: 22px; color: var(--text-muted); font-size: .875rem; cursor: default; }
   .palette-foot { display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .72rem; }
   .palette-foot kbd { margin-right: 3px; }
-  .filters { display: flex; gap: 8px; padding-top: 14px; overflow-x: auto; scrollbar-width: none; }
+  .filters { display: flex; gap: 8px; padding-top: 14px; min-height: 48px;  /* the chips arrive with the data; hold their row */ overflow-x: auto; scrollbar-width: none; }
   .filter-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 5px 14px; border: 1px solid var(--border); border-radius: var(--radius-lg);
     background: var(--bg-card); color: var(--text-muted); font-size: .8125rem; font-weight: 500; cursor: pointer; }
   .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
@@ -106,7 +106,7 @@
   .rank, .count { flex: 0 0 auto; min-width: 24px; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--tag-text); text-align: center; font-weight: 700; }
   .weekly-meta { display: flex; justify-content: flex-end; gap: 4px; min-width: 0; white-space: nowrap; }
   .weekly-source { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .weekly-card-title { font-size: .875rem; line-height: 1.28; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .weekly-card-title { font-size: .875rem; line-height: 1.28; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;  min-height: calc(1.28em * 4);}
 
   .items { max-width: var(--read); margin: 0 auto; padding: 14px 24px 48px; display: flex; flex-direction: column; gap: 7px; }
   .date-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 1px; padding: 8px 0 6px; border-bottom: 1px solid var(--border);
@@ -134,6 +134,12 @@
     .reader, .reader-backdrop, .feed, .card-arrow, .thumb { transition: none !important; }
     .rail { scroll-behavior: auto; }
   }
+  .skeleton { pointer-events: none; }
+  .skeleton .bone { display: block; height: .8em; border-radius: 6px; background: var(--border); animation: pulse 1.4s ease-in-out infinite; }
+  .skeleton .bone.title { height: 1em; margin-bottom: .4em; }
+  .skeleton.card { min-height: 104px; }
+  @keyframes pulse { 50% { opacity: .45; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton .bone { animation: none; } }
   .empty { padding: 60px 24px; color: var(--text-muted); text-align: center; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (hover: hover) {
@@ -146,7 +152,7 @@
   @media (max-width: 640px) {
     header { padding: 0 14px; }
     .subheader { padding: 8px 14px; }
-    .filters { margin-right: -14px; padding-top: 10px; }
+    .filters { margin-right: -14px; padding-top: 10px; min-height: 50px; }
     .filter-btn { min-height: 40px; }
     .weekly, .items { padding-left: 14px; padding-right: 14px; }
     .weekly-title { font-size: .9375rem; }
@@ -204,7 +210,7 @@
   </div>
   <div class="filters" id="filters"></div>
 </div>
-<section class="weekly feed" id="weekly" hidden>
+<section class="weekly feed" id="weekly">
   <div class="weekly-header">
     <div class="weekly-heading">
       <h2 class="weekly-title">This week’s essentials</h2>
@@ -216,9 +222,9 @@
       <button class="nav-btn" id="next" type="button" aria-label="Next"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
     </div>
   </div>
-  <div class="rail" id="rail"></div>
+  <div class="rail" id="rail"><div class="weekly-card skeleton" aria-hidden="true"><div class="weekly-top"><span class="rank">&nbsp;</span><span class="bone" style="width:55%"></span></div><div class="weekly-card-title"><span class="bone title"></span><span class="bone title" style="width:80%"></span></div></div><div class="weekly-card skeleton" aria-hidden="true"><div class="weekly-top"><span class="rank">&nbsp;</span><span class="bone" style="width:55%"></span></div><div class="weekly-card-title"><span class="bone title"></span><span class="bone title" style="width:80%"></span></div></div><div class="weekly-card skeleton" aria-hidden="true"><div class="weekly-top"><span class="rank">&nbsp;</span><span class="bone" style="width:55%"></span></div><div class="weekly-card-title"><span class="bone title"></span><span class="bone title" style="width:80%"></span></div></div></div>
 </section>
-<main class="items feed" id="items"><p class="empty">Loading articles…</p></main>
+<main class="items feed" id="items" aria-busy="true"><div class="date-label skeleton" aria-hidden="true"><span class="bone" style="width:6em"></span><span class="count">&nbsp;</span></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div></main>
 <div id="sentinel"></div>
 <div class="reader-backdrop" id="reader-backdrop"></div>
 <aside class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Reader" aria-hidden="true">
