@@ -1,0 +1,9 @@
+{
+  "name": "tech-watch",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@mozilla/readability": "0.6.0",
+    "linkedom": "0.18.15"
+  }
+}

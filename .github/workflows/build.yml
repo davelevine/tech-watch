@@ -35,6 +35,14 @@ jobs:
       - run: pip install -r requirements.txt pytest
       - run: pytest -q
 
+      - if: github.event_name == 'pull_request'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - if: github.event_name == 'pull_request'
+        run: npm ci && node --test 'tests/*.test.js'
+
       - if: github.event_name != 'pull_request'
         run: python build.py
         env:
