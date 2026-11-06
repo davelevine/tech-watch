@@ -55,7 +55,9 @@ def wait_until_closed(pg, timeout=5000):
         if not reading(pg):
             return
         pg.wait_for_timeout(100)
-    raise AssertionError("the reader didn't close")
+    state = pg.evaluate("({ messages: window.__tw || null, drag: getComputedStyle(document.documentElement).getPropertyValue('--drag'),"
+                        " frames: document.querySelectorAll('#reader-body iframe').length, hash: location.hash.slice(0, 40) })")
+    raise AssertionError(f"the reader didn't close: {state}")
 
 
 def test_csp_header_is_served(browser):
@@ -109,6 +111,7 @@ def test_swipe_back_on_a_phone(browser):
     card.tap()
     pg.wait_for_selector("#reader-body iframe")
     pg.frame_locator("#reader-body iframe").locator("p").first.wait_for()
+    pg.evaluate("window.__tw = []; addEventListener('message', e => __tw.push(e.data && e.data.tw))")
     cdp = pg.context.new_cdp_session(pg)
     cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": 80, "y": 600}]})
     for k in range(1, 13):
