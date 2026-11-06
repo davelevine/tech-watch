@@ -29,7 +29,7 @@ Tech Watch is a set-it-and-forget-it news digest covering AI, security, architec
 There's no server and no database. A scheduled GitHub Actions job does the work and commits a small JSON file, and a single static page renders it:
 
 - [`build.py`](build.py) fetches the feeds in [`feeds.opml`](feeds.opml), scores and summarizes new items with Ollama Cloud, removes duplicate coverage, and writes [`site/data.json`](site/data.json) and [`site/rss.xml`](site/rss.xml).
-- [`site/index.html`](site/index.html) is the whole front end: no framework, no build step.
+- [`site/index.html`](site/index.html) and [`site/app.js`](site/app.js) are the whole front end: no framework, no build step. [`site/_headers`](site/_headers) sets the Content-Security-Policy.
 - [`functions/api/read.js`](functions/api/read.js) powers the reader, pulling an article's text on demand when you open it.
 
 ### What you get
@@ -64,6 +64,7 @@ Opening an article calls `/api/read`, a Cloudflare Pages Function that fetches t
 - **Nothing is stored or cached.** Responses are `no-store`, and the text exists only for as long as you're reading it.
 - **It isn't an open proxy.** Only URLs that are already on the site are fetched.
 - **The page can't run anything from the source site.** Extracted HTML is stripped of scripts, frames, styles and event handlers on the server. It's then rendered in a sandboxed frame with no access to the page; the only script allowed in there is the site's own swipe and keyboard relay, admitted by a per-render nonce.
+- **A strict Content-Security-Policy backs all of this up.** Scripts load only from the site itself, plus two inline scripts allowed by exact hash; no plugins, forms or base-URL changes; network requests go only to the site. A test keeps the hashes in step with the code.
 - **No login, no tracking.** Read and New markers live in your browser's local storage and never leave it.
 
 </details>
@@ -100,6 +101,20 @@ npx wrangler pages dev site
 ```
 
 <details>
+  <summary><strong>Running the browser smoke test</strong></summary>
+
+With `npx wrangler pages dev site` running (it serves on port 8788 by default):
+
+```bash
+.venv/bin/pip install playwright && .venv/bin/python -m playwright install chromium
+SMOKE_URL=http://127.0.0.1:8788 .venv/bin/pytest -q tests/test_smoke.py
+```
+
+If you change the theme script in `index.html` or the relay script in `app.js`, `node --test` prints the new hash to put in `site/_headers`.
+
+</details>
+
+<details>
   <summary><strong>Adding or removing feeds</strong></summary>
 
 Edit [`feeds.opml`](feeds.opml); each feed is one `<outline>` line, and its `text` attribute is the publisher name shown on the site. Some big publishers (Anthropic, Cohere, Reuters) don't publish RSS. Anthropic comes from a community-maintained feed, and the Hacker News 300+ feed catches most of the rest.
@@ -118,6 +133,7 @@ Run the Build workflow by hand with `backfill_days` set (say, 30). It looks back
 | Workflow | Function | PR | Manual | Scheduled | Details |
 | -------- | -------- | :-: | :----: | :-------: | ------- |
 | [Build](./.github/workflows/build.yml) | Fetch, score, publish | ✓ | ✓ | ✓ | Every 4 hours at :17 UTC. On PRs it runs the Python and JavaScript tests only. Manual runs take an optional `backfill_days`. |
+| [Build › smoke](./.github/workflows/build.yml) | Browser smoke test | ✓ | | | Loads the site in Chromium under its real CSP and checks the feed, reader, search palette and swipe-back. Fails on any CSP violation, console error or page error. |
 
 Cloudflare Pages deploys every push to `main`, including the bot's data commits, and builds a preview for every PR. Its build command is `npm ci` with `site` as the output directory. The only secret is `OLLAMA_API_KEY`, in the repo's Actions secrets.
 
