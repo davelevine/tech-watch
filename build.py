@@ -33,6 +33,9 @@ DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20            # stories per repeat check
 SCORE_WORKERS = 8     # parallel scoring calls
 UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
+# The site's edge blocks non-browser user agents, so its own reader endpoint is called as a browser.
+BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+WORDS_PER_MINUTE = 230
 TRACKING = re.compile(r"^(utm_|ref$|source$|fbclid$|gclid$)")
 
 
@@ -264,6 +267,28 @@ def cap_per_day(items):
             for i in sorted(by_day[day], key=lambda i: -i.get("relevance", 0))[:DAILY_MAX]]
 
 
+def add_reading_times(items, limit=30):
+    """Fill in "minutes" for live articles that lack it, using the site's own reader extractor (/api/read only
+    serves articles already on the site, so new ones get theirs on the next run). Only the number is kept.
+    0 means the source blocks extraction: shown as nothing, and not retried."""
+    todo = [i for i in items if "minutes" not in i][:limit]
+
+    def one(item):
+        url = f"{SITE_URL}/api/read?url={urllib.parse.quote(item['url'], safe='')}"
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": BROWSER_UA}), timeout=30) as resp:
+                content = json.loads(resp.read()).get("content")
+        except Exception:  # not live yet, or a transient failure: try again next run
+            return item, None
+        words = len(re.sub(r"<[^>]+>", " ", content).split()) if content else 0
+        return item, max(1, round(words / WORDS_PER_MINUTE)) if words else 0
+
+    with ThreadPoolExecutor(6) as ex:
+        for item, minutes in ex.map(one, todo):
+            if minutes is not None:
+                item["minutes"] = minutes
+
+
 def update_feed_health(health, results, today):
     """health: {feed_url: first_failure_date}. Returns feeds dead for DEAD_AFTER_DAYS+."""
     for url, ok in results.items():
@@ -350,6 +375,7 @@ def main():
         except Exception as e:
             print(f"::warning::weekly pick failed: {e}")
 
+    add_reading_times(data["items"])
     data["generated_at"] = now().isoformat(timespec="seconds")
     SITE.mkdir(exist_ok=True)
     data_path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")

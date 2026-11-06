@@ -56,7 +56,7 @@ function renderPage() {
       <div class="card-body">
         <div class="card-title">${highlight(i.title, q)}</div>
         ${i.summary ? `<p class="card-summary">${highlight(i.summary, q)}</p>` : ''}
-        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span></div>
+        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span>${i.minutes ? `<span>·</span><span class="card-time">${i.minutes} min read</span>` : ''}</div>
       </div>
       <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')
@@ -87,11 +87,21 @@ function renderWeekly(weekly) {
 }
 
 const syncThemeColor = () => document.querySelector('meta[name="theme-color"]').setAttribute('content', css('--bg'));
-$('theme').onclick = () => {
-  const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  document.documentElement.dataset.theme = t;
+// Swap every color in one frame, then let a view transition crossfade the whole page; per-element
+// transitions would fade some parts and snap others. No view transitions, or reduced motion: instant.
+$('theme').onclick = $('reader-theme').onclick = () => {
+  const root = document.documentElement, t = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  const swap = () => {
+    root.classList.add('theme-switching');
+    root.dataset.theme = t;
+    getComputedStyle(root).color;  // commit the new colors before transitions come back
+    root.classList.remove('theme-switching');
+    syncThemeColor();
+    $('reader-body').querySelector('iframe[srcdoc]')?.contentWindow.postMessage({ tw: 'theme', theme: t }, '*');
+  };
+  if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(swap);
+  else swap();
   localStorage.setItem('theme', t);
-  syncThemeColor();
 };
 $('info').onclick = e => {
   e.stopPropagation();
@@ -154,7 +164,7 @@ let readerFor = null;
 
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 // Inside the article frame, the only script allowed is this one (by nonce): it reports rightward swipes to the
-// page so the reader can follow the finger, and forwards Escape, j/k, ←/→ and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
+// page so the reader can follow the finger, forwards Escape, j/k, ←/→ and Cmd/Ctrl+K, and takes theme changes. The frame has no same-origin access; it can only postMessage.
 const SWIPE_REPORTER = `let s = null;
 const send = (tw, t) => parent.postMessage({ tw, x: t && t.screenX }, '*');
 addEventListener('touchstart', e => { const t = e.touches[0]; s = { x: t.screenX, y: t.screenY, ax: null }; }, { passive: true });
@@ -166,36 +176,53 @@ addEventListener('touchmove', e => {
 }, { passive: false });
 const end = () => { if (s && s.ax === 'x') send('end'); s = null; };
 addEventListener('touchend', end); addEventListener('touchcancel', end);
+addEventListener('message', e => {  // the page's theme toggle
+  if (e.source === parent && e.data && e.data.tw === 'theme') document.documentElement.dataset.theme = e.data.theme;
+});
 addEventListener('keydown', e => {  // keys pressed while the article has focus never reach the page
   const k = e.key.toLowerCase();
   if (!e.altKey && ['escape', 'j', 'k', 'arrowleft', 'arrowright'].includes(k)) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k, mod: e.metaKey || e.ctrlKey }, '*'); }
 });`;
 
-function articleDoc(i, html, nonce, why) {
-  return `<!doctype html><html><head><meta charset="utf-8">
+// The article frame can't see the page's CSS variables, so it gets both palettes, read from the page's own
+// tokens, and the relay flips data-theme on it when the theme changes.
+function frameVars(theme) {
+  const probe = Object.assign(document.createElement('div'), { hidden: true });
+  probe.dataset.theme = theme;
+  document.body.append(probe);
+  const cs = getComputedStyle(probe);
+  const out = `color-scheme: ${theme}; ` + ["--accent", "--bg", "--bg-card", "--border", "--border-strong", "--text", "--text-muted"].map(v => `${v}: ${cs.getPropertyValue(v).trim()};`).join(' ');
+  probe.remove();
+  return out;
+}
+function articleDoc(i, html, nonce, why, minutes) {
+  return `<!doctype html><html data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; media-src https:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'">
 <base target="_blank"><style>
-:root { color-scheme: ${document.documentElement.dataset.theme}; }
-body { margin: 0; background: ${css('--bg')}; color: ${css('--text')}; font: 1.125rem/1.75 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
+:root { ${frameVars('light')} } :root[data-theme="dark"] { ${frameVars('dark')} }
+body { transition: background-color .35s ease, color .35s ease; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 1.125rem/1.75 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
 main { max-width: 680px; margin: 0 auto; padding: 40px 24px 96px; }
 h1 a { color: inherit; text-decoration: none; } h1 a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
-.why { margin: -1.2em 0 2.4em; padding: 12px 16px; border-left: 3px solid ${css('--accent')}; border-radius: 0 8px 8px 0; background: ${css('--bg-card')}; font: .95rem/1.5 Inter, system-ui, sans-serif; }
-.why b { display: block; margin-bottom: 2px; color: ${css('--accent')}; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; }
+.why { margin: -1.2em 0 2.4em; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--bg-card); font: .95rem/1.5 Inter, system-ui, sans-serif; }
+.why b { display: block; margin-bottom: 2px; color: var(--accent); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; }
 h1 { font-size: 2.1rem; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 .35em; }
-.src { margin-bottom: 2.4em; color: ${css('--accent')}; font: 600 .78rem/1 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
+.src { margin-bottom: 2.4em; color: var(--accent); font: 600 .78rem/1 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
 h2, h3, h4 { line-height: 1.3; margin: 1.6em 0 .5em; }
-a { color: ${css('--accent')}; }
+a { color: var(--accent); }
 img, video { max-width: 100%; height: auto; border-radius: 8px; }
-figure { margin: 1.6em 0; } figcaption { color: ${css('--text-muted')}; font-size: .85em; }
-blockquote { margin: 1.4em 0; padding-left: 1em; border-left: 3px solid ${css('--border-strong')}; color: ${css('--text-muted')}; }
-pre { overflow: auto; padding: 12px 14px; border-radius: 8px; background: ${css('--bg-card')}; font-size: .82em; line-height: 1.5; }
+figure { margin: 1.6em 0; } figcaption { color: var(--text-muted); font-size: .85em; }
+blockquote { margin: 1.4em 0; padding-left: 1em; border-left: 3px solid var(--border-strong); color: var(--text-muted); }
+pre { overflow: auto; padding: 12px 14px; border-radius: 8px; background: var(--bg-card); font-size: .82em; line-height: 1.5; }
 code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .88em; }
-table { display: block; overflow: auto; border-collapse: collapse; font-size: .9em; } th, td { padding: 4px 8px; border: 1px solid ${css('--border')}; }
-hr { border: 0; border-top: 1px solid ${css('--border')}; }
+table { display: block; overflow: auto; border-collapse: collapse; font-size: .9em; } th, td { padding: 4px 8px; border: 1px solid var(--border); }
+hr { border: 0; border-top: 1px solid var(--border); }
 @media (max-width: 600px) { main { padding: 24px 18px 80px; } h1 { font-size: 1.6rem; } body { font-size: 1.0625rem; } }
-</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}</div>${why ? `<div class="why"><b>Why it matters</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
+</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}${minutes ? ` · ${minutes} min read` : ''}</div>${why ? `<div class="why"><b>Why it matters</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
 }
 
+// About 230 words a minute, the usual adult reading speed for this kind of text.
+const readingMinutes = html => Math.max(1, Math.round(html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length / 230));
 const readHash = url => '#read=' + encodeURIComponent(url);
 let readerPushed = false;  // false when the reader was opened from a #read= link, so closing mustn't go back off the site
 function openReader(i, { fromHash = false } = {}) {
@@ -219,7 +246,9 @@ function openReader(i, { fromHash = false } = {}) {
     if (r.content) {
       // Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
       frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
-      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID(), why);
+      const minutes = readingMinutes(r.content);
+      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID(), why, minutes);
+      $('reader-source').textContent += ` · ${minutes} min read`;
     } else if (r.frameable) {
       frame.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms';
       frame.referrerPolicy = 'no-referrer';
