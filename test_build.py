@@ -42,3 +42,14 @@ def test_rss_is_well_formed():
     xml = build.rss([{"date": "2026-11-05", "title": "A & B <c>", "url": "https://x.test/?a=1&b=2",
                       "category": "ai", "summary": "s"}])
     assert ET.fromstring(xml).find("channel/item/title").text == "A & B <c>"
+
+
+def test_cap_per_day_keeps_most_relevant():
+    items = [{"date": "2026-11-05", "url": f"https://x.test/{n}", "relevance": n % 5 + 1} for n in range(12)]
+    items.append({"date": "2026-11-04", "url": "https://x.test/old"})
+    out = build.cap_per_day(items)
+    today = [i for i in out if i["date"] == "2026-11-05"]
+    dropped = [i for i in items[:12] if i not in today]
+    assert len(today) == build.DAILY_MAX
+    assert min(i["relevance"] for i in today) >= max(i["relevance"] for i in dropped)
+    assert out[-1]["url"] == "https://x.test/old"
