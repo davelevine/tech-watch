@@ -34,6 +34,7 @@
   .theme-switching *, .theme-switching *::before, .theme-switching *::after { transition: none !important; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .35s; animation-timing-function: ease; }
   html { scrollbar-gutter: stable; }  /* the reader locks scrolling; keep the scrollbar's space so nothing shifts */
+  * { -webkit-tap-highlight-color: transparent; }  /* Android paints it above the reader that opens on tap */
   body { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; }
