@@ -135,6 +135,8 @@ Run the Build workflow by hand with `backfill_days` set (say, 30). It looks back
 | [Build](./.github/workflows/build.yml) | Fetch, score, publish | ✓ | ✓ | ✓ | Every 4 hours at :17 UTC. On PRs it runs the Python and JavaScript tests only. Manual runs take an optional `backfill_days`. |
 | [Build › smoke](./.github/workflows/build.yml) | Browser smoke test | ✓ | | | Loads the site in Chromium under its real CSP and checks the feed, reader, search palette and swipe-back. Fails on any CSP violation, console error or page error. |
 
+[Renovate](https://docs.renovatebot.com/) ([`renovate.json`](renovate.json)) keeps every pin current: the GitHub Actions (pinned to commit digests), `feedparser`, Readability and linkedom, and the Playwright and Wrangler versions in the smoke job. New releases wait three days before an update is proposed. Patch and digest updates merge themselves once CI passes, including the browser smoke test; minor and major updates wait for review.
+
 Cloudflare Pages deploys every push to `main`, including the bot's data commits, and builds a preview for every PR. Its build command is `npm ci` with `site` as the output directory. The only secret is `OLLAMA_API_KEY`, in the repo's Actions secrets.
 
 ## Configuration

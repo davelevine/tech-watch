@@ -1,0 +1,57 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore(deps): ",
+  "commitMessageAction": "update",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "timezone": "America/New_York",
+  "dependencyDashboard": true,
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "3 days",
+  "commitBodyTable": true,
+  "configMigration": true,
+  "rebaseWhen": "behind-base-branch",
+  "automerge": false,
+  "platformAutomerge": false,
+  "automergeType": "pr",
+  "packageRules": [
+    {
+      "description": "Automerge digest and patch updates once CI passes (unit tests plus the browser smoke test)",
+      "matchUpdateTypes": ["digest", "pinDigest", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "The reader's extraction stack moves together",
+      "matchPackageNames": ["@mozilla/readability", "linkedom"],
+      "groupName": "reader extraction"
+    },
+    {
+      "description": "Tools used only by the PR smoke test move together",
+      "matchDepNames": ["playwright", "wrangler"],
+      "groupName": "smoke test tooling"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Playwright pinned in the smoke job's pip install",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["playwright==(?<currentValue>[0-9][0-9.]*)"],
+      "datasourceTemplate": "pypi",
+      "depNameTemplate": "playwright"
+    },
+    {
+      "customType": "regex",
+      "description": "Wrangler pinned in the smoke job's npx call",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["wrangler@(?<currentValue>[0-9][0-9.]*)"],
+      "datasourceTemplate": "npm",
+      "depNameTemplate": "wrangler"
+    }
+  ]
+}
