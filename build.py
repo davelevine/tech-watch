@@ -20,7 +20,7 @@ import feedparser
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
 STATE = ROOT / "state.json"
-SITE_URL = "https://tech.levine.io"
+SITE_URL = (os.environ.get("SITE_URL") or "https://tech.levine.io").rstrip("/")  # forks set the SITE_URL repo variable
 MODEL = os.environ.get("TECH_WATCH_MODEL", "claude-haiku-5-5")
 CLAUDE = os.environ.get("CLAUDE_BIN", "claude")  # Claude Code CLI
 CATEGORIES = ["ai", "security", "architecture", "sdlc", "regulation", "other"]

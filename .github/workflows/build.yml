@@ -50,6 +50,7 @@ jobs:
         run: python build.py
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          SITE_URL: ${{ vars.SITE_URL }}  # optional; build.py has a default
           FRESH_DAYS: ${{ inputs.backfill_days || 3 }}
           PER_FEED: ${{ inputs.backfill_days && 100 || 10 }}
 
