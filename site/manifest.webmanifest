@@ -1,6 +1,6 @@
 {
-  "name": "Tech Watch",
-  "short_name": "Tech Watch",
+  "name": "Triage",
+  "short_name": "Triage",
   "description": "AI, security and architecture news, summarized daily.",
   "start_url": "/",
   "scope": "/",

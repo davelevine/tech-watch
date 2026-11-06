@@ -6,9 +6,9 @@
 
 <div align="center">
 
-<img src="site/icon-512.png" alt="Tech Watch" width="96">
+<img src="site/icon-512.png" alt="Triage" width="96">
 
-# Tech Watch
+# Triage
 
 The week's tech news, minus the noise.
 
@@ -24,7 +24,7 @@ The week's tech news, minus the noise.
 
 ## Overview
 
-Tech Watch is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials with a line on why they matter. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
+Triage is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials with a line on why they matter. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
 
 There's no server and no database. A scheduled GitHub Actions job does the work and commits a small JSON file, and a single static page renders it:
 
@@ -194,7 +194,7 @@ The knobs live at the top of [`build.py`](build.py):
 | `PER_FEED` | 10 | Newest entries taken per feed per run (env-overridable) |
 | `KEEP_DAYS` | 90 | Prune articles and seen URLs older than this |
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
-| `TECH_WATCH_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
+| `TRIAGE_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
 | `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
 | `SITE_URL` | `https://tech.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
 
