@@ -45,7 +45,7 @@ export function clean(html, base) {
     }
     if (el.tagName === 'A') { el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener noreferrer'); }
   }
-  return root.innerHTML.replace(/[\uE000-\uF8FF]/g, '');  // icon-font glyphs render as boxes without the site's fonts
+  return root.innerHTML.replace(/[\uE000-\uF8FF]/g, ' ');  // icon-font glyphs (boxes without the site's fonts) often separate words
 }
 
 export async function onRequestGet({ request, env }) {
