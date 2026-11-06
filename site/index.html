@@ -135,8 +135,14 @@
     background: var(--bg); border-left: 1px solid var(--border); box-shadow: 0 24px 64px rgba(0, 0, 0, .3); transform: translateX(100%); visibility: hidden;
     transition: transform .22s cubic-bezier(.2, 0, 0, 1), visibility 0s .22s; }
   body.reading { overflow: hidden; }
-  body.reading .reader-backdrop { opacity: 1; pointer-events: auto; }
-  body.reading .reader { transform: none; visibility: visible; transition: transform .22s cubic-bezier(.2, 0, 0, 1); }
+  body.reading .reader-backdrop { opacity: calc(1 - var(--drag, 0)); pointer-events: auto; }
+  body.reading .reader { transform: translateX(calc(var(--drag, 0) * 100%)); visibility: visible; transition: transform .22s cubic-bezier(.2, 0, 0, 1); }
+  body.dragging .reader, body.dragging .reader-backdrop, body.dragging .feed { transition: none !important; }
+  /* Phones: the feed slides aside under the reader and follows a swipe back, like a native back gesture. */
+  @media (max-width: 640px) {
+    .feed { transition: transform .22s cubic-bezier(.2, 0, 0, 1); }
+    body.reading .feed { transform: translateX(calc(-25% * (1 - var(--drag, 0)))); }
+  }
   .reader-bar { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 12px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
   .reader-source { flex: 1; min-width: 0; color: var(--text-muted); font-size: .8125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .reader-body { position: relative; flex: 1; min-height: 0; }
@@ -146,7 +152,7 @@
 </style>
 </head>
 <body>
-<header>
+<header class="feed">
   <a class="logo" href="/">Tech <span>Watch</span></a>
   <div class="controls">
     <a class="icon-btn" href="/rss.xml" title="RSS feed" aria-label="RSS feed">
@@ -159,7 +165,7 @@
     </button>
   </div>
 </header>
-<div class="subheader">
+<div class="subheader feed">
   <div class="search-wrap" id="search-wrap">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="search" type="search" placeholder="Search..." aria-label="Search" autocomplete="off">
@@ -167,7 +173,7 @@
   </div>
   <div class="filters" id="filters"></div>
 </div>
-<section class="weekly" id="weekly" hidden>
+<section class="weekly feed" id="weekly" hidden>
   <div class="weekly-header">
     <div class="weekly-heading">
       <h2 class="weekly-title">This week’s essentials</h2>
@@ -181,7 +187,7 @@
   </div>
   <div class="rail" id="rail"></div>
 </section>
-<main class="items" id="items"><p class="empty">Loading articles…</p></main>
+<main class="items feed" id="items"><p class="empty">Loading articles…</p></main>
 <div id="sentinel"></div>
 <div class="reader-backdrop" id="reader-backdrop"></div>
 <aside class="reader" id="reader" aria-label="Reader" aria-hidden="true">
@@ -323,9 +329,27 @@ function load() {
 let readerFor = null;
 
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-function articleDoc(i, html) {
+// Inside the article frame, the only script allowed is this one (by nonce): it reports rightward swipes to the
+// page so the reader can follow the finger, and forwards Escape and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
+const SWIPE_REPORTER = `let s = null;
+const send = (tw, t) => parent.postMessage({ tw, x: t && t.screenX }, '*');
+addEventListener('touchstart', e => { const t = e.touches[0]; s = { x: t.screenX, y: t.screenY, ax: null }; }, { passive: true });
+addEventListener('touchmove', e => {
+  if (!s) return;
+  const t = e.touches[0], dx = t.screenX - s.x, dy = t.screenY - s.y;
+  if (!s.ax && Math.hypot(dx, dy) > 10) { s.ax = dx > Math.abs(dy) ? 'x' : 'y'; if (s.ax === 'x') send('start', { screenX: s.x }); }
+  if (s.ax === 'x') { e.preventDefault(); send('move', t); }
+}, { passive: false });
+const end = () => { if (s && s.ax === 'x') send('end'); s = null; };
+addEventListener('touchend', end); addEventListener('touchcancel', end);
+addEventListener('keydown', e => {  // keys pressed while the article has focus never reach the page
+  const k = e.key.toLowerCase();
+  if (k === 'escape' || ((e.metaKey || e.ctrlKey) && k === 'k')) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k }, '*'); }
+});`;
+
+function articleDoc(i, html, nonce) {
   return `<!doctype html><html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; media-src https:; style-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; media-src https:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'">
 <base target="_blank"><style>
 :root { color-scheme: ${document.documentElement.dataset.theme}; }
 body { margin: 0; background: ${css('--bg')}; color: ${css('--text')}; font: 1.125rem/1.75 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
@@ -342,7 +366,7 @@ code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size
 table { display: block; overflow: auto; border-collapse: collapse; font-size: .9em; } th, td { padding: 4px 8px; border: 1px solid ${css('--border')}; }
 hr { border: 0; border-top: 1px solid ${css('--border')}; }
 @media (max-width: 600px) { main { padding: 24px 18px 80px; } h1 { font-size: 1.6rem; } body { font-size: 1.0625rem; } }
-</style></head><body><main><h1>${esc(i.title)}</h1><div class="src">${esc(domain(i.url))}</div>${html}</main></body></html>`;
+</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1>${esc(i.title)}</h1><div class="src">${esc(domain(i.url))}</div>${html}</main></body></html>`;
 }
 
 function openReader(i) {
@@ -357,8 +381,9 @@ function openReader(i) {
     if (readerFor !== i.url) return;  // another article was opened meanwhile
     const frame = document.createElement('iframe');
     if (r.content) {
-      frame.sandbox = 'allow-popups allow-popups-to-escape-sandbox';  // no scripts, no access to this page
-      frame.srcdoc = articleDoc(i, r.content);
+      // Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
+      frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
+      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID());
     } else if (r.frameable) {
       frame.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms';
       frame.referrerPolicy = 'no-referrer';
@@ -380,9 +405,61 @@ function closeReader() {
 }
 const dismiss = () => (history.state?.reader ? history.back() : closeReader());
 addEventListener('popstate', () => { if (document.body.classList.contains('reading')) closeReader(); });
+// Swipe right to close: the reader follows the finger, then closes past a third of its width or on a flick
+// (judged on the finger's speed at release, px/ms).
+let drag = null;
+const setDrag = f => document.documentElement.style.setProperty('--drag', f);
+function dragStart(x) { drag = { x, dx: 0, lx: x, lt: performance.now(), v: 0 }; document.body.classList.add('dragging'); }
+function dragMove(x) {
+  if (!drag) return;
+  const now = performance.now();
+  if (now > drag.lt) drag.v = 0.6 * drag.v + 0.4 * (x - drag.lx) / (now - drag.lt);
+  drag.lx = x; drag.lt = now;
+  drag.dx = Math.max(0, x - drag.x);
+  setDrag(Math.min(1, drag.dx / $('reader').offsetWidth));
+}
+function dragEnd() {
+  if (!drag) return;
+  const { dx, v } = drag, flick = dx > 40 && v > 0.4;
+  drag = null;
+  document.body.classList.remove('dragging');
+  if (dx > $('reader').offsetWidth / 3 || flick) dismiss();
+  setDrag(0);  // the closed state ignores --drag; the open state springs back
+}
+// Touches on the reader's own chrome (the bar, messages). Framed original pages can't report touches.
+let touch = null;
+$('reader').addEventListener('touchstart', e => { const t = e.touches[0]; touch = { x: t.screenX, y: t.screenY, ax: null }; }, { passive: true });
+$('reader').addEventListener('touchmove', e => {
+  if (!touch) return;
+  const t = e.touches[0], dx = t.screenX - touch.x, dy = t.screenY - touch.y;
+  if (!touch.ax && Math.hypot(dx, dy) > 10) { touch.ax = dx > Math.abs(dy) ? 'x' : 'y'; if (touch.ax === 'x') dragStart(touch.x); }
+  if (touch.ax === 'x') { e.preventDefault(); dragMove(t.screenX); }
+}, { passive: false });
+$('reader').addEventListener('touchend', () => { if (touch?.ax === 'x') dragEnd(); touch = null; });
+$('reader').addEventListener('touchcancel', () => { if (touch?.ax === 'x') dragEnd(); touch = null; });
+// Swipes inside the article frame arrive as messages from the swipe reporter.
+addEventListener('message', e => {
+  const frame = $('reader-body').querySelector('iframe');
+  if (!frame || e.source !== frame.contentWindow || typeof e.data?.tw !== 'string') return;
+  if (e.data.tw === 'start') dragStart(e.data.x);
+  else if (e.data.tw === 'move') dragMove(e.data.x);
+  else if (e.data.tw === 'end') dragEnd();
+  else if (e.data.tw === 'key') onKey(e.data.key);
+});
+
 $('reader-close').onclick = dismiss;
 $('reader-backdrop').onclick = dismiss;
-addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('reading')) dismiss(); });
+function onKey(key, e) {
+  if (key === 'escape' && document.body.classList.contains('reading')) dismiss();
+  if (key === 'k' && (!e || e.metaKey || e.ctrlKey)) {
+    e?.preventDefault();
+    if (document.body.classList.contains('reading')) dismiss();
+    $('search').focus();
+    $('search').select();
+  }
+}
+addEventListener('keydown', e => onKey(e.key.toLowerCase(), e));
+if (matchMedia('(pointer: fine)').matches) $('search').placeholder = `Search...   ${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}`;
 // Plain clicks on an article open the reader; modified and middle clicks still open the site.
 document.addEventListener('click', e => {
   const a = e.target.closest('a.card, a.weekly-card');
