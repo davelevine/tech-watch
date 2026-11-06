@@ -152,16 +152,37 @@
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* Inline on wide screens; a popover behind the menu button on phones. The browser handles opening and dismissing it. */
   .menu { position: static; display: flex; align-items: center; gap: 6px; width: auto; height: auto; margin: 0; padding: 0; border: 0; background: none; color: inherit; overflow: visible; }
-  .menu-btn, .menu-label { display: none; }
+  .menu-btn, .menu-label, .menu-ext { display: none; }
   @media (max-width: 480px) {
     .menu-btn { display: inline-grid; }
+    .menu-btn path { transform-origin: 12px 12px; transition: transform .2s ease, opacity .15s ease; }
+    .menu-btn:has(+ .menu:popover-open) { background: var(--bg-card-hover); color: var(--text); }
+    .menu-btn:has(+ .menu:popover-open) path:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-btn:has(+ .menu:popover-open) path:nth-child(2) { opacity: 0; }
+    .menu-btn:has(+ .menu:popover-open) path:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .menu { flex-direction: column; align-items: stretch; gap: 0; position: fixed; inset: 58px 14px auto auto; width: 232px; padding: 6px;
+      border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: 0 12px 32px rgba(0, 0, 0, .28);
+      transform-origin: top right; opacity: 0; transform: translateY(-6px) scale(.97);
+      transition: opacity .16s ease, transform .16s ease, display .16s allow-discrete, overlay .16s allow-discrete; }
     .menu:not(:popover-open) { display: none; }
-    .menu:popover-open { position: fixed; inset: 56px 14px auto auto; flex-direction: column; align-items: stretch; gap: 2px; min-width: 190px; padding: 6px;
-      border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: 0 8px 24px rgba(0, 0, 0, .25); }
-    .menu .icon-btn { display: flex; align-items: center; gap: 10px; width: auto; height: 44px; padding: 0 10px; color: var(--text); }
-    .menu-label { display: inline; font-size: 14px; }
-    .menu .theme-toggle { justify-content: center; height: 44px; margin-top: 4px; }
+    body:has(.menu:popover-open) > :not(header) { pointer-events: none; }  /* a tap outside only closes the menu; it doesn't open the card underneath */
+    .menu:popover-open { opacity: 1; transform: none; }
+    @starting-style { .menu:popover-open { opacity: 0; transform: translateY(-6px) scale(.97); } }
+    .menu .icon-btn, .menu .theme-toggle { display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: 100%; height: 46px; padding: 0 10px; border: 0; border-radius: var(--radius-sm);
+      background: none; color: var(--text-muted); font: inherit; text-align: left; }
+    .menu .icon-btn svg, .menu .theme-toggle > svg { width: 18px; height: 18px; flex: none; }
+    .menu .icon-btn:active, .menu .theme-toggle:active { background: var(--bg-card-hover); }
+    .menu-label { display: inline; color: var(--text); font-size: 15px; font-weight: 500; }
+    .menu .icon-btn svg.menu-ext { display: block; width: 14px; height: 14px; margin-left: auto; }
+    /* A settings row: moon, label, then the switch. */
+    .menu .theme-toggle { position: relative; margin-top: 7px; }
+    .menu .theme-toggle::before { content: ""; position: absolute; inset: -4px 4px auto; border-top: 1px solid var(--border); }
+    .menu .theme-toggle > svg:first-child { display: none; }
+    .menu .theme-toggle > svg:last-child { order: -2; }
+    .menu .theme-toggle .menu-label { order: -1; margin-right: auto; }
+    [data-theme="dark"] .menu .track { background: var(--accent); }
   }
+  @media (prefers-reduced-motion: reduce) { .menu, .menu-btn path { transition: none !important; } }
   @media (hover: hover) {
     .icon-btn:hover { border-color: var(--border); background: var(--bg-card-hover); color: var(--accent); }
     .theme-toggle:hover, .nav-btn:not(:disabled):hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
@@ -213,7 +234,7 @@
   <div class="controls">
     <time class="updated" id="updated"></time>
     <button class="icon-btn menu-btn" id="menu-btn" type="button" popovertarget="menu" aria-label="Menu">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
     </button>
     <div class="menu" id="menu" popover>
     <a class="icon-btn" href="/rss.xml" title="RSS feed" aria-label="RSS feed">
@@ -222,11 +243,13 @@
     </a>
     <a class="icon-btn" href="https://github.com/davelevine/tech-watch" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub">
       <svg class="filled" viewBox="0 0 24 24"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-      <span class="menu-label">Source on GitHub</span>
+      <span class="menu-label">GitHub</span>
+      <svg class="menu-ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
     </a>
     <button class="theme-toggle" id="theme" type="button" aria-label="Toggle dark mode">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       <span class="track"><span class="thumb"></span></span>
+      <span class="menu-label">Dark mode</span>
       <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
     </div>

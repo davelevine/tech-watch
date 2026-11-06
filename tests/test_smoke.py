@@ -86,7 +86,17 @@ def test_phone_menu(browser):
     pg.tap("#theme")
     pg.wait_for_function("t => document.documentElement.dataset.theme !== t", arg=theme)  # swaps inside a view transition
     pg.keyboard.press("Escape")
-    assert pg.locator("#theme").is_hidden()
+    pg.locator("#theme").wait_for(state="hidden")  # after the closing fade
+    # Tapping away closes the menu without opening the article underneath.
+    card, _ = first_card(pg)
+    card.scroll_into_view_if_needed()
+    pg.tap("#menu-btn")
+    box = card.bounding_box()
+    pg.touchscreen.tap(box["x"] + 20, box["y"] + box["height"] / 2)
+    pg.wait_for_timeout(300)
+    assert pg.locator("#theme").is_hidden() and not reading(pg)
+    card.tap()
+    pg.wait_for_selector("#reader-body iframe")
     assert pg.problems == []
 
 
