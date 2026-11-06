@@ -98,7 +98,7 @@
   .nav-btn { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-card); color: var(--text); cursor: pointer; }
   .nav-btn:disabled { cursor: default; opacity: .45; }
   .nav-btn svg { width: 16px; height: 16px; stroke-width: 2.2; }
-  .rail { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 1px 1px 4px; scrollbar-width: none; }
+  .rail { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1px; scroll-behavior: smooth; padding: 1px 1px 4px; scrollbar-width: none; }
   .rail::-webkit-scrollbar, .filters::-webkit-scrollbar { display: none; }
   .weekly-card { flex: 0 0 calc((100% - 20px) / 3); min-width: 220px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 7px; padding: 12px;
     background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); }
