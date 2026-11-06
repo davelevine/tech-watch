@@ -1,6 +1,6 @@
 <!--markdownlint-disable-->
 
-[![Build](https://github.com/davelevine/tech-watch/actions/workflows/build.yml/badge.svg)](https://github.com/davelevine/tech-watch/actions/workflows/build.yml)
+[![Build](https://github.com/davelevine/triage/actions/workflows/build.yml/badge.svg)](https://github.com/davelevine/triage/actions/workflows/build.yml)
 [![Site](https://img.shields.io/badge/tech.levine.io-live-73dbcc?labelColor=2c3e50)](https://tech.levine.io)
 [![RSS](https://img.shields.io/badge/RSS-feed-ebb077?logo=rss&logoColor=ebb077&labelColor=2c3e50)](https://tech.levine.io/rss.xml)
 
@@ -155,7 +155,7 @@ curl -fsS -X POST \
   -H "Authorization: Bearer $GITHUB_DISPATCH_TOKEN" \
   -H "Accept: application/vnd.github+json" \
   -d '{"ref":"main"}' \
-  https://api.github.com/repos/<you>/tech-watch/actions/workflows/build.yml/dispatches
+  https://api.github.com/repos/<you>/triage/actions/workflows/build.yml/dispatches
 ```
 
 Leave the built-in schedule in place as a fallback; a duplicate run finds nothing new.

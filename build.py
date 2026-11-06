@@ -35,7 +35,7 @@ DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
 BATCH = 20            # stories per repeat check
 SCORE_WORKERS = 6     # parallel scoring calls (each is a CLI process)
-UA = "tech-watch/1.0 (+https://github.com/davelevine/tech-watch)"
+UA = "triage/1.0 (+https://github.com/davelevine/triage)"
 # The site's edge blocks non-browser user agents, so its own reader endpoint is called as a browser.
 BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 WORDS_PER_MINUTE = 230
