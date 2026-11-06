@@ -61,6 +61,7 @@ function renderPage() {
       <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')
     : '<p class="empty">No articles match your search.</p>';
+  $('items').removeAttribute('aria-busy');
   io.unobserve($('sentinel'));
   io.observe($('sentinel'));
 }
@@ -68,7 +69,7 @@ function renderPage() {
 function renderWeekly(weekly) {
   const byUrl = Object.fromEntries(items.map(i => [i.url, i]));
   const picks = (weekly?.items || []).filter(p => byUrl[p.url]);
-  if (!picks.length) return;
+  if (!picks.length) { $('weekly').hidden = true; return; }  // the placeholder tiles go too
   $('rail').innerHTML = picks.map((p, n) => { const i = byUrl[p.url]; return `
     <a class="weekly-card" href="${esc(i.url)}" target="_blank" rel="noopener" title="${esc(p.why)}">
       <div class="weekly-top"><span class="rank">${n + 1}</span>
