@@ -92,7 +92,7 @@ const syncThemeColor = () => {
   $('theme').setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark');
 };
 // Swap every color in one frame, then let a view transition crossfade the whole page; per-element
-// transitions would fade some parts and snap others. No view transitions, or reduced motion: instant.
+// transitions would fade some parts and snap others. It runs under reduced motion too: a fade moves nothing.
 $('theme').onclick = $('reader-theme').onclick = () => {
   const root = document.documentElement, t = root.dataset.theme === 'dark' ? 'light' : 'dark';
   const swap = () => {
@@ -103,7 +103,7 @@ $('theme').onclick = $('reader-theme').onclick = () => {
     syncThemeColor();
     $('reader-body').querySelector('iframe[srcdoc]')?.contentWindow.postMessage({ tw: 'theme', theme: t }, '*');
   };
-  if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(swap);
+  if (document.startViewTransition) document.startViewTransition(swap);
   else swap();
   localStorage.setItem('theme', t);
 };

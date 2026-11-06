@@ -102,6 +102,14 @@ def test_phone_menu(browser):
     assert pg.problems == []
 
 
+def test_theme_crossfades_even_under_reduced_motion(browser):
+    pg = open_site(browser, viewport={"width": 412, "height": 800}, has_touch=True, is_mobile=True, reduced_motion="reduce")
+    pg.tap("#menu-btn")
+    pg.evaluate("document.getElementById('theme').click()")
+    pg.wait_for_function("() => document.getAnimations().some(a => a.effect.pseudoElement?.includes('view-transition'))")
+    assert pg.problems == []
+
+
 def test_wide_screens_keep_the_controls_in_the_header(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     assert pg.locator("#theme").is_visible() and pg.locator("#menu-btn").is_hidden()
