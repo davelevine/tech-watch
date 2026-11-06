@@ -53,12 +53,31 @@
   .search-wrap, .filters { max-width: calc(var(--read) - 48px); margin: 0 auto; }
   .search-wrap { position: relative; }
   .search-wrap > svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-  #search { width: 100%; padding: 8px 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text); font: inherit; font-size: .875rem; outline: none; }
+  #search { width: 100%; padding: 8px 64px 8px 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text); font: inherit; font-size: .875rem; outline: none; }
   #search:focus { border-color: var(--accent); }
   #search::placeholder { color: var(--text-muted); }
   #search::-webkit-search-cancel-button { display: none; }
   .clear-btn { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); display: none; }
   .search-wrap.has-value .clear-btn { display: inline-grid; }
+  kbd { padding: 3px 6px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; background: var(--bg); color: var(--text-muted); font: 600 .7rem/1 Inter, system-ui, sans-serif; white-space: nowrap; }
+  .search-kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .search-wrap.has-value .search-kbd { display: none; }
+  .palette-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(0, 0, 0, .5); }
+  .palette { position: fixed; z-index: 301; top: 12vh; left: 50%; transform: translateX(-50%); width: min(640px, calc(100vw - 24px)); max-height: 70vh; display: flex; flex-direction: column;
+    overflow: hidden; background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); box-shadow: 0 24px 64px rgba(0, 0, 0, .35); }
+  .palette-input { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--border); }
+  .palette-input svg { flex: none; width: 18px; height: 18px; color: var(--text-muted); }
+  #palette-q { flex: 1; min-width: 0; height: 52px; border: 0; outline: none; background: none; color: var(--text); font: inherit; font-size: 1rem; }
+  #palette-q::placeholder { color: var(--text-muted); }
+  .palette-list { margin: 0; padding: 6px; list-style: none; overflow-y: auto; }
+  .palette-list li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm); cursor: pointer; }
+  .palette-list li[aria-selected="true"] { background: var(--accent-soft); }
+  .palette-list .dot { margin-top: 6px; }
+  .p-title { font-size: .9rem; font-weight: 600; line-height: 1.35; }
+  .p-meta { margin-top: 2px; color: var(--text-muted); font-size: .75rem; }
+  .palette-list .palette-empty { justify-content: center; padding: 22px; color: var(--text-muted); font-size: .875rem; cursor: default; }
+  .palette-foot { display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .72rem; }
+  .palette-foot kbd { margin-right: 3px; }
   .filters { display: flex; gap: 8px; padding-top: 14px; overflow-x: auto; scrollbar-width: none; }
   .filter-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 5px 14px; border: 1px solid var(--border); border-radius: var(--radius-lg);
     background: var(--bg-card); color: var(--text-muted); font-size: .8125rem; font-weight: 500; cursor: pointer; }
@@ -137,6 +156,8 @@
     .card { padding: 12px; gap: 10px; }
     .card-title { font-size: .875rem; }
     .back-to-top { right: 12px; bottom: 12px; }
+    .palette { top: 8px; max-height: calc(100vh - 16px); }
+    .palette-foot { display: none; }
   }
   .reader-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0, 0, 0, .45); opacity: 0; pointer-events: none; transition: opacity .18s; }
   .reader { position: fixed; top: 0; right: 0; bottom: 0; z-index: 201; width: min(820px, 100vw); display: flex; flex-direction: column;
@@ -178,6 +199,7 @@
   <div class="search-wrap" id="search-wrap">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="search" type="search" placeholder="Search..." aria-label="Search" autocomplete="off">
+    <kbd class="search-kbd" id="search-kbd" hidden></kbd>
     <button class="icon-btn clear-btn" id="clear" type="button" aria-label="Clear search"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
   </div>
   <div class="filters" id="filters"></div>
@@ -186,8 +208,8 @@
   <div class="weekly-header">
     <div class="weekly-heading">
       <h2 class="weekly-title">This week’s essentials</h2>
-      <button class="info-btn" id="info" type="button" aria-expanded="false" aria-controls="info-pop" aria-label="About this selection">i</button>
-      <div class="popover" id="info-pop" hidden>Five stories from the last seven days, picked by an LLM and refreshed daily. Hover a card to see why it made the cut.</div>
+      <button class="info-btn" id="info" type="button" aria-expanded="false" aria-controls="info-pop" aria-label="About this selection" title="A selection of this week’s noteworthy tech news.">i</button>
+      <div class="popover" id="info-pop" hidden>A selection of this week’s noteworthy tech news.</div>
     </div>
     <div class="nav">
       <button class="nav-btn" id="prev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
@@ -206,6 +228,16 @@
   </div>
   <div class="reader-body" id="reader-body"></div>
 </aside>
+<div class="palette-backdrop" id="palette-backdrop" hidden></div>
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Search articles" hidden>
+  <div class="palette-input">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="palette-q" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" placeholder="Search articles…" autocomplete="off" spellcheck="false">
+    <kbd>Esc</kbd>
+  </div>
+  <ul class="palette-list" id="palette-list" role="listbox" aria-label="Results"></ul>
+  <div class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> choose</span><span><kbd>↵</kbd> read</span><span><kbd>Esc</kbd> close</span></div>
+</div>
 <button class="back-to-top" id="top" type="button" aria-label="Back to top" hidden><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script>
 const CATS = { security: 'Security', ai: 'AI', architecture: 'Architecture', sdlc: 'SDLC', regulation: 'Regulation', other: 'Other' };
@@ -363,7 +395,7 @@ let readerFor = null;
 
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 // Inside the article frame, the only script allowed is this one (by nonce): it reports rightward swipes to the
-// page so the reader can follow the finger, and forwards Escape, j/k and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
+// page so the reader can follow the finger, and forwards Escape, j/k, ←/→ and Cmd/Ctrl+K. The frame has no same-origin access; it can only postMessage.
 const SWIPE_REPORTER = `let s = null;
 const send = (tw, t) => parent.postMessage({ tw, x: t && t.screenX }, '*');
 addEventListener('touchstart', e => { const t = e.touches[0]; s = { x: t.screenX, y: t.screenY, ax: null }; }, { passive: true });
@@ -377,7 +409,7 @@ const end = () => { if (s && s.ax === 'x') send('end'); s = null; };
 addEventListener('touchend', end); addEventListener('touchcancel', end);
 addEventListener('keydown', e => {  // keys pressed while the article has focus never reach the page
   const k = e.key.toLowerCase();
-  if (!e.altKey && (k === 'escape' || k === 'j' || k === 'k')) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k, mod: e.metaKey || e.ctrlKey }, '*'); }
+  if (!e.altKey && ['escape', 'j', 'k', 'arrowleft', 'arrowright'].includes(k)) { e.preventDefault(); parent.postMessage({ tw: 'key', key: k, mod: e.metaKey || e.ctrlKey }, '*'); }
 });`;
 
 function articleDoc(i, html, nonce, why) {
@@ -509,7 +541,7 @@ addEventListener('message', e => {
 
 $('reader-close').onclick = dismiss;
 $('reader-backdrop').onclick = dismiss;
-// j/k: next/previous article (in the reader it switches articles in place); / and Cmd/Ctrl+K: search.
+// j/k or →/←: next/previous article (in the reader it switches articles in place); /: search bar; Cmd/Ctrl+K: search palette.
 function step(dir) {
   if (document.body.classList.contains('reading')) {
     const next = shown[shown.findIndex(i => i.url === readerFor) + dir];
@@ -526,19 +558,78 @@ function step(dir) {
 function onKey(key, mod, e) {
   const reading = document.body.classList.contains('reading');
   if (key === 'escape' && reading) return dismiss();
-  if (key === 'k' && mod) {
-    e?.preventDefault();
-    if (reading) dismiss();
-    $('search').focus();
-    $('search').select();
-    return;
-  }
+  if (key === 'k' && mod) { e?.preventDefault(); return openPalette(); }
   if (mod || e?.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) return;
   if (key === '/' && !reading) { e?.preventDefault(); $('search').focus(); }
-  else if (key === 'j' || key === 'k') { e?.preventDefault(); step(key === 'j' ? 1 : -1); }
+  else if (key === 'j' || key === 'arrowright') { e?.preventDefault(); step(1); }
+  else if (key === 'k' || key === 'arrowleft') { e?.preventDefault(); step(-1); }
 }
 addEventListener('keydown', e => onKey(e.key.toLowerCase(), e.metaKey || e.ctrlKey, e));
-if (matchMedia('(pointer: fine)').matches) $('search').placeholder = `Search...   ${/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}`;
+if (matchMedia('(pointer: fine)').matches) {
+  $('search-kbd').textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K';
+  $('search-kbd').hidden = false;
+}
+
+// Cmd/Ctrl+K palette: find any article and open it in the reader. Works over the reader too.
+const pal = { results: [], sel: 0, returnTo: null };
+const LAYERS = '.feed, #top, #reader';
+function openPalette() {
+  if (!$('palette').hidden) return $('palette-q').select();
+  pal.returnTo = document.activeElement;
+  document.querySelectorAll(LAYERS).forEach(el => { el.dataset.wasInert = el.inert ? '1' : ''; el.inert = true; });
+  $('palette').hidden = $('palette-backdrop').hidden = false;
+  $('palette-q').value = '';
+  renderPalette();
+  $('palette-q').focus();
+}
+function closePalette(restoreFocus = true) {
+  $('palette').hidden = $('palette-backdrop').hidden = true;
+  document.querySelectorAll(LAYERS).forEach(el => { el.inert = el.dataset.wasInert === '1'; });
+  if (restoreFocus) pal.returnTo?.focus?.({ preventScroll: true });
+}
+function renderPalette() {
+  const q = $('palette-q').value.trim(), ql = q.toLowerCase();
+  // Title matches rank above summary/publisher matches; within a rank, items stay newest first.
+  const rank = i => {
+    if (!ql) return 1;
+    const t = i.title.toLowerCase();
+    if (t.includes(ql)) return t.startsWith(ql) ? 3 : 2;
+    return `${i.summary} ${i.publisher} ${domain(i.url)}`.toLowerCase().includes(ql) ? 1 : 0;
+  };
+  pal.results = items.map(i => [rank(i), i]).filter(([r]) => r).sort((a, b) => b[0] - a[0]).slice(0, 30).map(([, i]) => i);
+  pal.sel = 0;
+  $('palette-list').innerHTML = pal.results.length ? pal.results.map((i, n) => { const c = cat(i.category); return `
+    <li role="option" id="p-${n}" data-n="${n}" aria-selected="${n === 0}">
+      <span class="dot" style="--c:var(--cat-${c})"></span>
+      <div><div class="p-title">${highlight(i.title, q)}</div><div class="p-meta">${esc(i.publisher)} · ${CATS[c]} · ${dayLabel(i.date)}</div></div>
+    </li>`; }).join('') : `<li class="palette-empty">No articles match “${esc(q)}”.</li>`;
+  $('palette-q').setAttribute('aria-activedescendant', pal.results.length ? 'p-0' : '');
+}
+function selectPalette(n, scroll = true) {
+  if (!pal.results.length) return;
+  pal.sel = (n + pal.results.length) % pal.results.length;
+  $('palette-list').querySelectorAll('li[data-n]').forEach(li => li.setAttribute('aria-selected', +li.dataset.n === pal.sel));
+  $('palette-q').setAttribute('aria-activedescendant', 'p-' + pal.sel);
+  if (scroll) $('p-' + pal.sel).scrollIntoView({ block: 'nearest' });
+}
+function choosePalette(n = pal.sel) {
+  const i = pal.results[n];
+  if (!i) return;
+  closePalette(false);
+  openReader(i);
+}
+$('palette-q').addEventListener('input', renderPalette);
+$('palette-q').addEventListener('keydown', e => {
+  e.stopPropagation();  // keep page shortcuts (Escape closing the reader, j/k) out of the palette
+  if (e.key === 'ArrowDown') { e.preventDefault(); selectPalette(pal.sel + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); selectPalette(pal.sel - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); choosePalette(); }
+  else if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+  else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('palette-q').select(); }
+});
+$('palette-list').addEventListener('click', e => { const li = e.target.closest('li[data-n]'); if (li) choosePalette(+li.dataset.n); });
+$('palette-list').addEventListener('mousemove', e => { const li = e.target.closest('li[data-n]'); if (li && +li.dataset.n !== pal.sel) selectPalette(+li.dataset.n, false); });
+$('palette-backdrop').addEventListener('click', () => closePalette());
 document.addEventListener('auxclick', e => { const a = e.target.closest('a.card, a.weekly-card'); if (a && e.button === 1) markRead(a.getAttribute('href')); });
 // Plain clicks on an article open the reader; modified and middle clicks still open the site.
 document.addEventListener('click', e => {
