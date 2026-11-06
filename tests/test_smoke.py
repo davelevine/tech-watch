@@ -102,9 +102,13 @@ def test_phone_menu(browser):
     assert pg.problems == []
 
 
-def test_theme_crossfades_even_under_reduced_motion(browser):
+def test_animations_run_under_reduced_motion(browser):
     pg = open_site(browser, viewport={"width": 412, "height": 800}, has_touch=True, is_mobile=True, reduced_motion="reduce")
+    running = "s => getComputedStyle(document.querySelector(s)).transitionDuration !== '0s' && getComputedStyle(document.querySelector(s)).transitionProperty !== 'none'"
+    for selector in ("#menu", "#reader", ".thumb"):
+        assert pg.evaluate(running, selector), selector
     pg.tap("#menu-btn")
+    pg.wait_for_function("() => document.getElementById('menu').getAnimations().length > 0 || getComputedStyle(document.getElementById('menu')).clipPath.includes('-40px')")
     pg.evaluate("document.getElementById('theme').click()")
     pg.wait_for_function("() => document.getAnimations().some(a => a.effect.pseudoElement?.includes('view-transition'))")
     assert pg.problems == []

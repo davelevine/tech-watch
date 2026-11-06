@@ -92,7 +92,7 @@ const syncThemeColor = () => {
   $('theme').setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark');
 };
 // Swap every color in one frame, then let a view transition crossfade the whole page; per-element
-// transitions would fade some parts and snap others. It runs under reduced motion too: a fade moves nothing.
+// transitions would fade some parts and snap others.
 $('theme').onclick = $('reader-theme').onclick = () => {
   const root = document.documentElement, t = root.dataset.theme === 'dark' ? 'light' : 'dark';
   const swap = () => {
