@@ -3,6 +3,7 @@ console errors or page errors. Runs against `wrangler pages dev site` (CI starts
 /api/read is stubbed so the test doesn't depend on outside sites; tests/read.test.js covers the function."""
 import json
 import os
+import re
 import urllib.parse
 
 import pytest
@@ -71,6 +72,7 @@ def test_feed_renders(browser):
     pg = open_site(browser)
     assert pg.locator("a.card").count() > 0
     assert pg.locator(".filter-btn").count() >= 7  # All + every category
+    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text("#updated"))
     assert pg.problems == []
 
 

@@ -145,12 +145,21 @@ const rememberSeen = () => { if (generatedAt) localStorage.setItem('seenUntil', 
 addEventListener('pagehide', rememberSeen);
 document.addEventListener('visibilitychange', () => { if (document.hidden) rememberSeen(); });
 
+// "Updated 2h ago" in the header; a number that keeps growing means builds have stopped.
+function showUpdated() {
+  const el = $('updated'), mins = Math.max(0, (Date.now() - Date.parse(generatedAt)) / 60e3);
+  el.dateTime = generatedAt;
+  el.title = new Date(generatedAt).toLocaleString();
+  el.innerHTML = '<span>Updated </span>' + (mins < 1 ? 'just now' : mins < 60 ? `${Math.floor(mins)}m ago`
+    : mins < 48 * 60 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`);
+}
 // Redraws only when a new build has landed, keeping the filter, search and loaded depth.
 function load() {
   return fetch('data.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
     if (data.generated_at === generatedAt) return;
     const refresh = generatedAt !== null;
     generatedAt = data.generated_at;
+    showUpdated();
     items = data.items || [];
     weekly = data.weekly;
     pruneRead();
@@ -435,4 +444,5 @@ load().catch(() => { $('items').innerHTML = '<p class="empty">Couldn’t load th
 // Builds land every ~4h: check every 15 min while visible, and when the tab comes back into view.
 const check = () => { if (!document.hidden) load().catch(() => {}); };
 setInterval(check, 15 * 60e3);
+setInterval(() => { if (generatedAt && !document.hidden) showUpdated(); }, 60e3);
 document.addEventListener('visibilitychange', check);
