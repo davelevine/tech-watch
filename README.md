@@ -128,6 +128,48 @@ Run the Build workflow by hand with `backfill_days` set (say, 30). It looks back
 
 </details>
 
+## Run your own copy
+
+Everything runs on GitHub Actions and Cloudflare Pages' free tiers. The only paid piece is a Claude subscription (Pro or Max), which the build uses through the Claude Code CLI, so there's no API key and no per-token bill. Setup takes about fifteen minutes.
+
+1. **Fork the repository.** GitHub turns workflows off in new forks, so open the fork's **Actions** tab and enable them.
+2. **Create the Claude token.** On a machine where you're signed in to Claude Code with your subscription, run:
+
+   ```bash
+   claude setup-token
+   ```
+
+   It prints a long-lived OAuth token (it lasts about a year). In the fork, go to **Settings → Secrets and variables → Actions → New repository secret**, name it `CLAUDE_CODE_OAUTH_TOKEN`, and paste the token. When it expires, builds start failing with "every scoring call failed"; run `claude setup-token` again and replace the secret.
+3. **Connect Cloudflare Pages.** Create a Pages project from your fork with production branch `main`, build command `npm ci`, and output directory `site`. Add a custom domain if you want one; the `*.pages.dev` address works as is.
+4. **Tell the build where the site lives.** Under **Settings → Secrets and variables → Actions → Variables**, add `SITE_URL` with your site's address (for example `https://news.example.com`). The build uses it for the RSS feed's links and to look up reading times through the site's reader.
+5. **Make it yours.** Point the GitHub icon in `site/index.html` at your fork, change the README badges, edit [`feeds.opml`](feeds.opml), and adjust the bars in [`build.py`](build.py) if you want more or fewer stories (see [Configuration](#configuration)).
+6. **Run the first build.** Under **Actions → Build → Run workflow**, start it on `main`. Set `backfill_days` to `30` to fill in the last month (only as far back as each feed still lists). Pages deploys the result a minute after the build commits.
+
+<details>
+  <summary><strong>Keeping the schedule on time</strong></summary>
+
+The workflow runs every four hours on GitHub's own scheduler, which often starts late and sometimes skips a slot. For a dependable cadence, trigger it from any scheduler you already have (cron, a systemd timer, a hosted cron service) with a fine-grained personal access token limited to your fork, with **Actions: read and write**:
+
+```bash
+curl -fsS -X POST \
+  -H "Authorization: Bearer $GITHUB_DISPATCH_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  -d '{"ref":"main"}' \
+  https://api.github.com/repos/<you>/tech-watch/actions/workflows/build.yml/dispatches
+```
+
+Leave the built-in schedule in place as a fallback; a duplicate run finds nothing new.
+
+</details>
+
+<details>
+  <summary><strong>Optional extras</strong></summary>
+
+- **Renovate:** install the [Renovate app](https://github.com/apps/renovate) on the fork; [`renovate.json`](renovate.json) is already set up.
+- **Dead feeds:** a feed that fails every fetch for two weeks gets listed in one "Dead feeds" issue; no other setup needed.
+
+</details>
+
 ## CI/CD
 
 | Workflow | Function | PR | Manual | Scheduled | Details |
@@ -154,6 +196,7 @@ The knobs live at the top of [`build.py`](build.py):
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
 | `TECH_WATCH_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
 | `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
+| `SITE_URL` | `https://tech.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
 
 How often it runs is the `cron` line in [`build.yml`](.github/workflows/build.yml).
 
