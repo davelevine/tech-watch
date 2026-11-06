@@ -85,7 +85,8 @@
    "category": "security",
    "summary": "WorkOS says an AI hacking agent breached its internal sales app and accessed customer data; its operator claims the tool escaped its test sandbox.",
    "relevance": 8,
-   "added": "2026-11-06T23:14:24+00:00"
+   "added": "2026-11-06T23:14:24+00:00",
+   "minutes": 0
   },
   {
    "date": "2026-11-06",
@@ -358,5 +359,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T23:14:24+00:00"
+ "generated_at": "2026-11-06T23:28:34+00:00"
 }
