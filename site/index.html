@@ -46,6 +46,9 @@
   .logo { font-size: 17px; font-weight: 760; letter-spacing: -.025em; }
   .logo span { color: var(--accent); }
   .controls { display: flex; align-items: center; gap: 6px; }
+  .updated { color: var(--text-muted); font-size: 12px; white-space: nowrap; margin-right: 4px; }
+  @media (max-width: 480px) { .updated span { display: none; } }
+  @media (max-width: 389px) { .updated { display: none; } }
   .icon-btn { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid transparent; border-radius: var(--radius-sm); background: none; color: var(--text-muted); cursor: pointer; }
   .icon-btn svg { width: 17px; height: 17px; }
   .theme-toggle { display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 7px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--text-muted); cursor: pointer; }
@@ -198,6 +201,7 @@
 <header class="feed">
   <a class="logo" href="/">Tech <span>Watch</span></a>
   <div class="controls">
+    <time class="updated" id="updated"></time>
     <a class="icon-btn" href="/rss.xml" title="RSS feed" aria-label="RSS feed">
       <svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
     </a>
