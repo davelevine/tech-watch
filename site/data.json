@@ -32,6 +32,16 @@
   },
   {
    "date": "2026-11-06",
+   "title": "CEO-spoofing scammers used AI to help steal more than $100 million, feds say",
+   "url": "https://therecord.media/ceo-spoofing-scammers-charged",
+   "publisher": "The Record",
+   "category": "security",
+   "summary": "US prosecutors charged three suspects in Europe with using AI-assisted CEO impersonation to defraud victims of more than $100 million.",
+   "relevance": 8,
+   "added": "2026-11-06T15:04:21+00:00"
+  },
+  {
+   "date": "2026-11-06",
    "title": "EU accuses TikTok of trapping users in harmful ‘rabbit holes’",
    "url": "https://therecord.media/eu-accuses-tiktok-of-rabbit-hole-DSA-violation",
    "publisher": "The Record",
@@ -277,5 +287,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T13:34:32+00:00"
+ "generated_at": "2026-11-06T15:04:21+00:00"
 }
