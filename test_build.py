@@ -117,3 +117,16 @@ def test_reading_times_use_the_sites_reader(monkeypatch):
     items = [{"url": "https://x.test/long"}, {"url": "https://x.test/blocked"}, {"url": "https://x.test/new"}, {"url": "https://x.test/done", "minutes": 5}]
     build.add_reading_times(items)
     assert [i.get("minutes") for i in items] == [3, 0, None, 5]
+
+
+def test_run_summary_counts_and_near_misses():
+    new = [{"url": f"https://x.test/{n}", "title": f"T{n}", "publisher": "P"} for n in range(4)]
+    scores = {new[0]["url"]: {"category": "security", "relevance": 8, "summary": "s"},
+              new[1]["url"]: {"category": "security", "relevance": 7, "summary": "s"},   # one under the Security bar
+              new[2]["url"]: {"category": "regulation", "relevance": 5, "summary": "s"},
+              new[3]["url"]: None}                                                        # scoring failed
+    out = build.run_summary(45, 1, new, scores, [(new[0], scores[new[0]["url"]])], [], [])
+    assert "45 fetched, 1 failed" in out and "**New stories:** 4" in out and "**Scored:** 3 (1 failed" in out
+    assert "**Kept:** 1" in out and "[T0](https://x.test/0)" in out
+    near = out.split("One point under the bar")[1]
+    assert "T1" in near and "T2" not in near
