@@ -45,6 +45,13 @@ export function clean(html, base) {
     }
     if (el.tagName === 'A') { el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener noreferrer'); }
   }
+  // Sites space out metadata spans with CSS ("Nov 04, 2026" + "Cloud Security"); without it the text runs together.
+  for (const el of root.querySelectorAll('span, time, a')) {
+    const next = el.nextSibling;
+    if (next?.nodeType === 1 && !el.closest('pre, code') && /\S$/.test(el.textContent) && /^\S/.test(next.textContent)) {
+      el.parentNode.insertBefore(document.createTextNode(' '), next);
+    }
+  }
   return root.innerHTML.replace(/[\uE000-\uF8FF]/g, ' ');  // icon-font glyphs (boxes without the site's fonts) often separate words
 }
 

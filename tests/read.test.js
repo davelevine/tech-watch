@@ -21,3 +21,9 @@ test('clean strips active content and makes links absolute', () => {
   assert.match(link, /rel="noopener noreferrer"/);
   assert.match(out, /<img[^>]+src="https:\/\/example.com\/a\/i.png"/);
 });
+
+test('clean keeps adjacent metadata spans apart, but not code tokens', () => {
+  const out = clean('<p><span><span>Nov 04, 2026</span></span><span>Cloud Security</span></p><pre><span>a</span><span>b</span></pre>', 'https://x.test/');
+  assert.match(out, /2026<\/span><\/span> <span>Cloud/);
+  assert.match(out, /<span>a<\/span><span>b<\/span>/);
+});
