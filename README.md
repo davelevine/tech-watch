@@ -15,7 +15,7 @@ Every four hours a GitHub Actions workflow runs `build.py`, which:
 
 1. Fetches every feed in `feeds.opml`. A failing feed is skipped, never fatal.
 2. Keeps dated entries from the last 3 days that haven't been seen before, up to 10 per feed.
-3. Sends them to Ollama Cloud (`deepseek-v4.1-flash`) in batches of 20 for a category, a 1-5 relevance score and a one-sentence summary. Anything scoring below 3 (marketing, webinars, hiring) is dropped. The model also flags an item that repeats a story already on the site from the last 7 days (the same launch from another outlet, say), and repeats are dropped. Each day then keeps only its 8 most relevant items, which works out to about 5 a day; quiet days keep everything that passes.
+3. Sends them to Ollama Cloud (`deepseek-v4.1-flash`) in batches of 20 for a category, a 1-10 relevance score and a one-sentence summary. Relevance is judged within each category, and only the notable stories are kept: 8+ for AI and Security, 7+ for the quieter categories. That lets the daily count follow the news, a handful on a big day and none on a slow one. The model also flags an item that repeats a story already on the site from the last 7 days (the same launch from another outlet, say), and repeats are dropped. A cap of 10 a day guards against an unusually big news day.
 4. Once a day, asks the model to pick the week's five essentials.
 5. Writes `site/data.json` and `site/rss.xml`, and remembers seen URLs in `state.json`.
 

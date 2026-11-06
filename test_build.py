@@ -46,11 +46,11 @@ def test_rss_is_well_formed():
 
 
 def test_cap_per_day_keeps_most_relevant():
-    items = [{"date": "2026-11-05", "url": f"https://x.test/{n}", "relevance": n % 5 + 1} for n in range(12)]
+    items = [{"date": "2026-11-05", "url": f"https://x.test/{n}", "relevance": n % 10 + 1} for n in range(14)]
     items.append({"date": "2026-11-04", "url": "https://x.test/old"})
     out = build.cap_per_day(items)
     today = [i for i in out if i["date"] == "2026-11-05"]
-    dropped = [i for i in items[:12] if i not in today]
+    dropped = [i for i in items[:14] if i not in today]
     assert len(today) == build.DAILY_MAX
     assert min(i["relevance"] for i in today) >= max(i["relevance"] for i in dropped)
     assert out[-1]["url"] == "https://x.test/old"
