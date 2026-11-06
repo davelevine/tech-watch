@@ -18,9 +18,11 @@ permissions:
   contents: write
   issues: write
 
+# Scheduled and manual builds commit to main, so they share one queue. Each PR gets its own group, so a burst
+# of PRs (Renovate opens several at once) can't cancel one another's checks or hold up the data build.
 concurrency:
-  group: build
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'build' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
