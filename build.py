@@ -273,8 +273,8 @@ def cap_per_day(items):
 def add_reading_times(items, limit=30):
     """Fill in "minutes" for live articles that lack it, using the site's own reader extractor (/api/read only
     serves articles already on the site, so new ones get theirs on the next run). Only the number is kept.
-    0 means the source blocks extraction: shown as nothing, and not retried."""
-    todo = [i for i in items if "minutes" not in i][:limit]
+    0 means the reader got nothing: shown as nothing, and retried, since some sources block only some requests."""
+    todo = [i for i in items if not i.get("minutes")][:limit]  # newest first, so old blocked items can't crowd out new ones
 
     def one(item):
         url = f"{SITE_URL}/api/read?url={urllib.parse.quote(item['url'], safe='')}"
