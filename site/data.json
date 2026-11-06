@@ -55,6 +55,16 @@
    "relevance": 8
   },
   {
+   "date": "2026-11-04",
+   "title": "How Figma manages sandboxes at scale",
+   "url": "https://www.figma.com/blog/how-figma-manages-sandboxes-at-scale/",
+   "publisher": "Figma",
+   "category": "architecture",
+   "summary": "Figma describes Nimbus, its platform for running tens of thousands of sandboxes to execute untrusted AI-generated code safely.",
+   "relevance": 7,
+   "added": "2026-11-06T06:58:04+00:00"
+  },
+  {
    "date": "2026-11-03",
    "title": "Red Hat Patches 9.8-Rated Linux TCP RCE Flaw While Ubuntu Releases Fixes for Testing",
    "url": "https://thehackernews.com/2026/11/red-hat-patches-98-rated-linux-tcp-rce.html",
@@ -217,5 +227,5 @@
    }
   ]
  },
- "generated_at": "2026-11-06T00:25:06+00:00"
+ "generated_at": "2026-11-06T06:58:05+00:00"
 }
