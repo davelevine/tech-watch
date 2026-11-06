@@ -180,7 +180,7 @@ const cat = c => (c in CATS ? c : 'other');
 const domain = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const PAGE = 40;
 const io = new IntersectionObserver(([e]) => { if (e.isIntersecting && limit < shown.length) { limit += PAGE; renderPage(); } }, { rootMargin: '800px' });
-let items = [], filter = 'all', shown = [], limit = PAGE;
+let items = [], filter = 'all', shown = [], limit = PAGE, generatedAt = null;
 
 function dayLabel(iso) {
   const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(iso + 'T00:00:00')) / 864e5);
@@ -205,12 +205,12 @@ function renderFilters() {
       `<span class="dot" style="--c:var(--cat-${c})"></span>${SHORT[c] || CATS[c]} (${counts[c] || 0})</button>`)).join('');
 }
 
-function renderItems() {
+function renderItems(keepLimit) {
   const ql = $('search').value.trim().toLowerCase();
   $('search-wrap').classList.toggle('has-value', !!ql);
   shown = items.filter(i => (filter === 'all' || cat(i.category) === filter) &&
     (!ql || `${i.title} ${i.summary} ${i.publisher} ${domain(i.url)}`.toLowerCase().includes(ql)));
-  limit = PAGE;
+  if (!keepLimit) limit = PAGE;
   renderPage();
 }
 
@@ -276,18 +276,29 @@ $('filters').onclick = e => {
   renderFilters();
   renderItems();
 };
-$('search').oninput = renderItems;
+$('search').oninput = () => renderItems();
 io.observe($('sentinel'));
 addEventListener('scroll', () => { $('top').hidden = scrollY < 800; }, { passive: true });
 $('top').onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
 $('clear').onclick = () => { $('search').value = ''; renderItems(); $('search').focus(); };
 
-fetch('data.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
-  items = data.items || [];
-  renderFilters();
-  renderWeekly(data.weekly);
-  renderItems();
-}).catch(() => { $('items').innerHTML = '<p class="empty">Couldn’t load the news. Try again in a bit.</p>'; });
+// Redraws only when a new build has landed, keeping the filter, search and loaded depth.
+function load() {
+  return fetch('data.json', { cache: 'no-cache' }).then(r => r.json()).then(data => {
+    if (data.generated_at === generatedAt) return;
+    const refresh = generatedAt !== null;
+    generatedAt = data.generated_at;
+    items = data.items || [];
+    renderFilters();
+    renderWeekly(data.weekly);
+    renderItems(refresh);
+  });
+}
+load().catch(() => { $('items').innerHTML = '<p class="empty">Couldn’t load the news. Try again in a bit.</p>'; });
+// Builds land every ~4h: check every 15 min while visible, and when the tab comes back into view.
+const check = () => { if (!document.hidden) load().catch(() => {}); };
+setInterval(check, 15 * 60e3);
+document.addEventListener('visibilitychange', check);
 </script>
 </body>
 </html>
