@@ -59,8 +59,9 @@
 
   .subheader { position: sticky; top: 52px; z-index: 99; padding: 10px 20px 12px; border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(16px) saturate(1.25); -webkit-backdrop-filter: blur(16px) saturate(1.25); }
-  .search-wrap, .filters { max-width: calc(var(--read) - 48px); margin: 0 auto; }
-  .search-wrap { position: relative; }
+  .search-row, .filters { max-width: calc(var(--read) - 48px); margin: 0 auto; }
+  .search-row { display: flex; gap: 8px; }
+  .search-wrap { position: relative; flex: 1; min-width: 0; }
   .search-wrap > svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
   #search { width: 100%; padding: 8px 64px 8px 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text); font: inherit; font-size: .875rem; outline: none; }
   #search:focus { border-color: var(--accent); }
@@ -87,7 +88,9 @@
   .palette-list .palette-empty { justify-content: center; padding: 22px; color: var(--text-muted); font-size: .875rem; cursor: default; }
   .palette-foot { display: flex; gap: 16px; padding: 8px 14px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .72rem; }
   .palette-foot kbd { margin-right: 3px; }
-  .filters { display: flex; gap: 8px; padding-top: 14px; min-height: 48px;  /* the chips arrive with the data; hold their row */ overflow-x: auto; scrollbar-width: none; }
+  /* A row on wide screens; a popover behind the filter button on phones. */
+  .filters { position: static; display: flex; gap: 8px; width: auto; height: auto; padding: 14px 0 0; border: 0; background: none; color: inherit; min-height: 48px;  /* the chips arrive with the data; hold their row */ overflow-x: auto; scrollbar-width: none; }
+  .filter-toggle { display: none; }
   .filter-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 5px 14px; border: 1px solid var(--border); border-radius: var(--radius-lg);
     background: var(--bg-card); color: var(--text-muted); font-size: .875rem; font-weight: 500; cursor: pointer; }
   .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
@@ -192,7 +195,23 @@
   @media (max-width: 640px) {
     header { padding: 0 14px; }
     .subheader { padding: 8px 14px; }
-    .filters { margin-right: -14px; padding-top: 10px; min-height: 54px; }
+    .filter-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 6px; min-width: 44px; height: 44px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-muted); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
+    .filter-toggle svg { width: 20px; height: 20px; }
+    .filter-toggle.active { border-color: var(--accent); background: var(--accent-soft); color: var(--tag-text); }
+    .subheader:has(.filters:popover-open) .filter-toggle { border-color: var(--border-strong); background: var(--bg-card-hover); }
+    /* Same drawer as the menu, under the pinned search row (52px header + 61px row). */
+    .filters { position: fixed; inset: 113px 0 auto; flex-wrap: wrap; width: 100%; max-width: none; min-height: 0; margin: 0; padding: 12px 14px 14px; overflow: visible; border-bottom: 1px solid var(--border-strong);
+      background: var(--bg); box-shadow: 0 12px 24px rgba(0, 0, 0, .25); clip-path: inset(0 0 100% 0);
+      transition: clip-path .22s cubic-bezier(.2, 0, 0, 1), display .22s allow-discrete, overlay .22s allow-discrete; }
+    .filters::backdrop { top: 113px; background: transparent; transition: background .22s ease, display .22s allow-discrete, overlay .22s allow-discrete; }
+    .filters:not(:popover-open) { display: none; }
+    body:has(.filters:popover-open) > :not(header, .subheader) { pointer-events: none; }  /* a tap outside only closes the drawer */
+    .filters:popover-open { clip-path: inset(0 0 -40px 0); }
+    .filters:popover-open::backdrop { background: rgba(0, 0, 0, .45); }
+    @starting-style {
+      .filters:popover-open { clip-path: inset(0 0 100% 0); }
+      .filters:popover-open::backdrop { background: transparent; }
+    }
     .filter-btn { min-height: 44px; }
     .icon-btn, .nav-btn { width: 44px; height: 44px; }
     .icon-btn svg { width: 24px; height: 24px; }
@@ -260,13 +279,18 @@
   </div>
 </header>
 <div class="subheader feed">
-  <div class="search-wrap" id="search-wrap">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="search" type="search" placeholder="Search..." aria-label="Search" autocomplete="off">
-    <kbd class="search-kbd" id="search-kbd" hidden></kbd>
-    <button class="icon-btn clear-btn" id="clear" type="button" aria-label="Clear search"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <div class="search-row">
+    <div class="search-wrap" id="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search..." aria-label="Search" autocomplete="off">
+      <kbd class="search-kbd" id="search-kbd" hidden></kbd>
+      <button class="icon-btn clear-btn" id="clear" type="button" aria-label="Clear search"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <button class="filter-toggle" id="filter-toggle" type="button" popovertarget="filters" aria-label="Filters">
+      <svg viewBox="0 0 24 24"><path d="M3 5h18M7 12h10M10 19h4"/></svg><span id="filter-label"></span>
+    </button>
   </div>
-  <div class="filters" id="filters"></div>
+  <div class="filters" id="filters" popover></div>
 </div>
 <section class="weekly feed" id="weekly">
   <div class="weekly-header">

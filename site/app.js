@@ -31,6 +31,10 @@ function renderFilters() {
   $('filters').innerHTML = [`<button class="filter-btn${filter === 'all' ? ' active' : ''}" data-f="all">All</button>`]
     .concat(ORDER.map(c => `<button class="filter-btn${filter === c ? ' active' : ''}" data-f="${c}">` +
       `<span class="dot" style="--c:var(--cat-${c})"></span>${SHORT[c] || CATS[c]} (${counts[c] || 0})</button>`)).join('');
+  const name = filter === 'all' ? '' : SHORT[filter] || CATS[filter];
+  $('filter-label').textContent = name;  // a hidden filter must still show, or stories look missing
+  $('filter-toggle').classList.toggle('active', !!name);
+  $('filter-toggle').setAttribute('aria-label', name ? `Filters: ${name}` : 'Filters');
 }
 
 function renderItems(keepLimit) {
@@ -121,6 +125,7 @@ $('filters').onclick = e => {
   filter = b.dataset.f;
   renderFilters();
   renderItems();
+  if ($('filters').matches(':popover-open')) $('filters').hidePopover();
 };
 $('search').oninput = () => renderItems();
 io.observe($('sentinel'));
