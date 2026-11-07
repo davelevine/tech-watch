@@ -135,6 +135,19 @@ def test_phone_filter_drawer(browser):
     assert pg.problems == []
 
 
+def test_essentials_card_layout(browser):
+    pg = open_site(browser, viewport={"width": 1300, "height": 900})
+    card = pg.locator(".weekly-card").first
+    assert card.locator(".weekly-top .rank").count() == 1 and card.locator(".weekly-top .weekly-cat .dot").count() == 1
+    assert card.locator(".weekly-top .weekly-source").count() == 0  # the publisher moved to the bottom line
+    # A long publisher shortens before the date does, and the line stays inside the card.
+    card.locator(".weekly-source").evaluate("e => { e.textContent = 'A Very Long Publisher Name That Cannot Possibly Fit Here' }")
+    fits = """c => { const m = c.querySelector('.weekly-meta').getBoundingClientRect(), r = c.getBoundingClientRect(),
+        d = c.querySelector('.weekly-meta > :last-child'); return m.right <= r.right && d.scrollWidth <= d.clientWidth && d.textContent.startsWith('·'); }"""
+    assert card.evaluate(fits)
+    assert pg.problems == []
+
+
 def test_wide_screens_keep_the_filter_row(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     assert pg.locator("#filter-toggle").is_hidden() and pg.locator("#filters .filter-btn").first.is_visible()

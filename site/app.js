@@ -79,8 +79,9 @@ function renderWeekly(weekly) {
   $('rail').innerHTML = picks.map((p, n) => { const i = byUrl[p.url]; return `
     <a class="weekly-card" href="${esc(i.url)}" target="_blank" rel="noopener" title="${esc(p.why)}">
       <div class="weekly-top"><span class="rank">${n + 1}</span>
-        <span class="weekly-meta"><span class="weekly-source">${esc(i.publisher)}</span><span>· ${CATS[cat(i.category)]} · ${dayLabel(i.date)}</span></span></div>
+        <span class="weekly-cat"><span class="dot" style="--c:var(--cat-${cat(i.category)})"></span>${CATS[cat(i.category)]}</span></div>
       <div class="weekly-card-title">${esc(i.title)}</div>
+      <div class="weekly-meta"><span class="weekly-source">${esc(i.publisher)}</span><span>· ${dayLabel(i.date)}</span></div>
     </a>`; }).join('');
   $('weekly').hidden = false;
   const rail = $('rail');
