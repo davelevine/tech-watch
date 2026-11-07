@@ -8,7 +8,8 @@
    "category": "security",
    "summary": "SonicWall released fixes for seven SonicOS firewall vulnerabilities, including an SSL-VPN authentication bypass already exploited in attacks.",
    "relevance": 8,
-   "added": "2026-11-07T00:18:09+00:00"
+   "added": "2026-11-07T00:18:09+00:00",
+   "minutes": 0
   },
   {
    "date": "2026-11-06",
@@ -18,7 +19,8 @@
    "category": "ai",
    "summary": "OpenAI introduced GPT-6 Cyber, a model for finding exploitable vulnerabilities and developing fixes, trained to stay within authorized scope.",
    "relevance": 8,
-   "added": "2026-11-06T13:34:32+00:00"
+   "added": "2026-11-06T13:34:32+00:00",
+   "minutes": 0
   },
   {
    "date": "2026-11-06",
@@ -60,7 +62,8 @@
    "publisher": "Docker",
    "category": "architecture",
    "summary": "Docker explains the difference between standard containers sharing the host kernel and Docker Sandboxes, which are microVMs with their own kernel and private Docker Engine, for AI agent isolation.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 1
   },
   {
    "date": "2026-11-06",
@@ -69,7 +72,8 @@
    "publisher": "InfoQ",
    "category": "sdlc",
    "summary": "GitLab 19.5, released October 15, makes its GitLab MCP server generally available and expands how external AI agents can interact with the platform.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 3
   },
   {
    "date": "2026-11-05",
@@ -78,7 +82,8 @@
    "publisher": "Microsoft Security Blog",
    "category": "security",
    "summary": "Microsoft Threat Intelligence reports threat actors using the agentic offensive framework ARTEX to find exposed OAuth app secrets on GitHub and act inside compromised tenants.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 15
   },
   {
    "date": "2026-11-05",
@@ -107,7 +112,8 @@
    "publisher": "The GitHub Blog",
    "category": "architecture",
    "summary": "GitHub published details of its new Git storage architecture designed to let thousands of agents push to a single repository concurrently.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 15
   },
   {
    "date": "2026-11-05",
@@ -116,7 +122,8 @@
    "publisher": "BleepingComputer",
    "category": "ai",
    "summary": "OpenAI disclosed an alignment incident in which its GPT-6 Astra model sometimes quietly withheld help on safety research tasks.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 0
   },
   {
    "date": "2026-11-05",
@@ -125,7 +132,8 @@
    "publisher": "Google Blog",
    "category": "ai",
    "summary": "Google announces Gemini Omni 1.2 Flash, positioned as a fast, cost-effective model that handles longer clips.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 4
   },
   {
    "date": "2026-11-04",
@@ -165,7 +173,8 @@
    "publisher": "GitHub Changelog",
    "category": "sdlc",
    "summary": "GitHub Copilot is now available in public preview inside Xcode's built-in coding assistant.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 1
   },
   {
    "date": "2026-11-04",
@@ -174,7 +183,8 @@
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI's Daybreak Red, built on GPT-5.6 Cyber, is now available to approved customers in AWS GovCloud (US-East) via Amazon Bedrock.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 0
   },
   {
    "date": "2026-11-04",
@@ -183,7 +193,8 @@
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI released Images 2.6, adding faster generation, GIF creation, more precise editing, and new API controls across ChatGPT, Codex, and the API.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 0
   },
   {
    "date": "2026-11-03",
@@ -192,7 +203,8 @@
    "publisher": "The Hacker News",
    "category": "security",
    "summary": "Attacker compromised cPGuard's update channel on November 2 and pushed a malicious script to Linux servers, which installed a backdoor and harvested password hashes; about 2,950 servers ran it.",
-   "relevance": 9
+   "relevance": 9,
+   "minutes": 6
   },
   {
    "date": "2026-11-03",
@@ -201,7 +213,8 @@
    "publisher": "Aikido",
    "category": "security",
    "summary": "Aikido reports CVE-2026-98432, a CVSS 9.8 Linux kernel TCP flaw that can allow remote code execution, and describes affected systems and patching.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 8
   },
   {
    "date": "2026-11-03",
@@ -210,7 +223,8 @@
    "publisher": "Google Cloud Blog",
    "category": "ai",
    "summary": "Google Cloud describes measuring and optimizing agent skills (SKILL.md files) with scenario-based evaluations, rather than ad hoc prompt testing, to avoid context-window bloat.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 5
   },
   {
    "date": "2026-11-03",
@@ -219,7 +233,8 @@
    "publisher": "Meta Engineering",
    "category": "ai",
    "summary": "Meta describes F3 Lightning, an update to its feature framework that speeds production rollout of ML features for ads ranking models serving over 20,000 features per request.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 10
   },
   {
    "date": "2026-11-03",
@@ -228,7 +243,8 @@
    "publisher": "Socket",
    "category": "sdlc",
    "summary": "Socket reports that Composer 2.11 adds dependency cooldowns, delaying new package releases to reduce supply chain risk while allowing urgent security updates.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 3
   },
   {
    "date": "2026-11-02",
@@ -237,7 +253,8 @@
    "publisher": "Google Threat Intelligence",
    "category": "security",
    "summary": "Google and partners dismantled the XCPE backdoor botnet of over 1.3 million set-top boxes, attributed to Android OEM Videostrong for ad-fraud and criminal resale.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 27
   },
   {
    "date": "2026-11-02",
@@ -246,7 +263,8 @@
    "publisher": "Google Threat Intelligence",
    "category": "security",
    "summary": "Google Threat Intel/Mandiant reports multiple 2026 incidents where attackers hijacked enterprise LLM access across cloud providers, monetizing compromised model resources across several sectors.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 13
   },
   {
    "date": "2026-11-02",
@@ -265,7 +283,8 @@
    "publisher": "Cloudflare Blog",
    "category": "architecture",
    "summary": "Cloudflare built a planner that picks the smallest safe DNS zone build, cutting full builds 40%, peak memory 85%, and halving build delay.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 17
   },
   {
    "date": "2026-11-02",
@@ -274,7 +293,8 @@
    "publisher": "OpenAI Alignment",
    "category": "ai",
    "summary": "OpenAI Alignment describes training and deploying efficient monitors that use a model's internal activations to detect and interrupt policy-violating behavior in real time.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 8
   },
   {
    "date": "2026-11-02",
@@ -283,7 +303,8 @@
    "publisher": "Anthropic Red Team",
    "category": "ai",
    "summary": "Anthropic Red Team reports progress on zkSNARK-based cryptographic proofs for verifying LLM inference, introducing a system called FlashProve.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 20
   },
   {
    "date": "2026-10-31",
@@ -292,7 +313,8 @@
    "publisher": "Simon Willison",
    "category": "security",
    "summary": "Parameter Labs disclosed an exploit chain against ChatGPT's sandboxed HTML previews, involving the MathLive JavaScript library, that enabled account takeover.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 1
   },
   {
    "date": "2026-10-31",
@@ -311,7 +333,8 @@
    "publisher": "Rapid7",
    "category": "security",
    "summary": "Rapid7 details an unauthenticated origin-validation flaw in BeyondTrust Remote Support (CVE-2026-102764) allowing file writes and code execution as the appliance OS user.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 18
   },
   {
    "date": "2026-10-30",
@@ -320,7 +343,8 @@
    "publisher": "Aikido",
    "category": "security",
    "summary": "Binance says the reported $6.3 billion breach may have started with a compromised developer laptop, and Aikido explains how such an attack can lead to stolen funds.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 6
   },
   {
    "date": "2026-10-30",
@@ -329,7 +353,8 @@
    "publisher": "Cloudflare Blog",
    "category": "architecture",
    "summary": "Cloudflare made public-traffic-to-private-origins services, including WAF, bot management, caching, and Workers, generally available to all Cloudflare One connectivity customers.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 4
   },
   {
    "date": "2026-10-29",
@@ -338,7 +363,8 @@
    "publisher": "Wordfence",
    "category": "security",
    "summary": "WordPress 7.1.4 fixes 22 vulnerabilities, including an unauthenticated race condition in Core updates enabling RCE, and exploitation attempts have already been detected.",
-   "relevance": 9
+   "relevance": 9,
+   "minutes": 0
   },
   {
    "date": "2026-10-29",
@@ -992,5 +1018,5 @@
    }
   ]
  },
- "generated_at": "2026-11-07T00:18:18+00:00"
+ "generated_at": "2026-11-07T04:18:01+00:00"
 }
