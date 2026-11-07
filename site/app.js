@@ -274,7 +274,17 @@ function showInReader(i, html, why, minutes) {
   frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
   frame.title = i.title;
   frame.srcdoc = articleDoc(i, html, crypto.randomUUID(), why, minutes);
-  $('reader-body').replaceChildren(frame);
+  mountFrame(frame);
+}
+// Loads behind whatever's showing and takes over once drawn, so the pane never blinks empty between frames.
+function mountFrame(frame) {
+  frame.classList.add('loading');
+  frame.onload = () => {
+    if (!frame.parentNode) return;
+    while (frame.previousSibling) frame.previousSibling.remove();
+    frame.classList.remove('loading');
+  };
+  $('reader-body').append(frame);
 }
 
 // About 230 words a minute, the usual adult reading speed for this kind of text.
@@ -308,7 +318,7 @@ function openReader(i, { fromHash = false } = {}) {
       frame.referrerPolicy = 'no-referrer';
       frame.src = i.url;
       frame.title = i.title;
-      $('reader-body').replaceChildren(frame);
+      mountFrame(frame);
       $('reader-source').textContent += ' · original page';
     } else throw new Error('unreadable');
   }).catch(() => {

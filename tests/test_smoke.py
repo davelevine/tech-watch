@@ -58,7 +58,7 @@ def wait_until_closed(pg, timeout=5000):
             return
         pg.wait_for_timeout(100)
     state = pg.evaluate("({ messages: window.__tw || null, drag: getComputedStyle(document.documentElement).getPropertyValue('--drag'),"
-                        " frames: document.querySelectorAll('#reader-body iframe').length, hash: location.hash.slice(0, 40) })")
+                        " frames: document.querySelectorAll('#reader-body iframe:not(.loading)').length, hash: location.hash.slice(0, 40) })")
     raise AssertionError(f"the reader didn't close: {state}")
 
 
@@ -103,7 +103,7 @@ def test_phone_menu(browser):
     pg.locator("#theme").wait_for(state="hidden")
     assert not reading(pg)
     pg.touchscreen.tap(x, y)
-    pg.wait_for_selector("#reader-body iframe")
+    pg.wait_for_selector("#reader-body iframe:not(.loading)")
     assert pg.problems == []
 
 
@@ -269,7 +269,7 @@ def held_reader(browser, **context):
     card = pg.locator(".weekly-card").first
     title = card.locator(".weekly-card-title").text_content()
     card.click()
-    return pg, held, title, pg.frame_locator("#reader-body iframe")
+    return pg, held, title, pg.frame_locator("#reader-body iframe:not(.loading)")
 
 
 def test_reader_shows_the_story_before_the_fetch_finishes(browser):
@@ -289,6 +289,27 @@ def test_reader_shows_the_story_before_the_fetch_finishes(browser):
     pg.wait_for_function("() => document.getElementById('reader-source').textContent.includes('3 min read')")
     frame.locator(".status").wait_for(state="detached")
     assert frame.locator("h1").inner_text() == title and frame.locator(".todo").count() == 1
+
+
+def test_reader_swaps_frames_without_a_blank_gap(browser):
+    pg, held, _, frame = held_reader(browser, viewport={"width": 1300, "height": 900})
+    frame.locator("h1").wait_for()
+    for _ in range(50):
+        if held:
+            break
+        pg.wait_for_timeout(20)
+    # The old frame must outlive the new one's arrival: it leaves only once the new one has loaded, as it's revealed.
+    pg.evaluate("""() => { window.__swap = [];
+        new MutationObserver(ms => __swap.push(ms.flatMap(m => m.type === 'attributes' ? ['revealed']
+            : [...[...m.addedNodes].map(() => 'added'), ...[...m.removedNodes].map(() => 'removed')])))
+            .observe(document.getElementById('reader-body'), { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    }""")
+    url = urllib.parse.parse_qs(urllib.parse.urlsplit(held[0].request.url).query)["url"][0]
+    held[0].fulfill(content_type="application/json", body=json.dumps({"url": url, "frameable": False, "content": BODY}))
+    frame.locator("p").nth(29).wait_for()
+    batches = pg.evaluate("__swap")
+    assert batches[0] == ["added"] and batches[1] == ["removed", "revealed"], batches  # separate moments, then together
+    assert pg.locator("#reader-body iframe").count() == 1
 
 
 def test_reader_keeps_the_card_when_the_article_is_blocked(browser):
@@ -366,7 +387,7 @@ def test_reader_and_frame_relay_run_under_csp(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     card, title = first_card(pg)
     card.click()
-    frame = pg.frame_locator("#reader-body iframe")
+    frame = pg.frame_locator("#reader-body iframe:not(.loading)")
     assert frame.locator("h1").inner_text() == title
     assert frame.locator("h1 a").get_attribute("href") == card.get_attribute("href")
     frame.locator("p").nth(29).wait_for()  # the card shows first, then the article replaces it
@@ -387,7 +408,7 @@ def test_search_palette(browser):
     pg.keyboard.type(title.split()[0])
     assert pg.locator("#palette-list li[data-n]").count() > 0
     pg.keyboard.press("Enter")
-    pg.wait_for_selector("#reader-body iframe")
+    pg.wait_for_selector("#reader-body iframe:not(.loading)")
     assert reading(pg) and pg.locator("#palette").is_hidden()
     assert pg.problems == []
 
@@ -398,8 +419,8 @@ def test_swipe_back_on_a_phone(browser):
     card.scroll_into_view_if_needed()
     pg.wait_for_timeout(300)
     card.tap()
-    pg.wait_for_selector("#reader-body iframe")
-    pg.frame_locator("#reader-body iframe").locator("p").nth(29).wait_for()  # the article, not the card before it
+    pg.wait_for_selector("#reader-body iframe:not(.loading)")
+    pg.frame_locator("#reader-body iframe:not(.loading)").locator("p").nth(29).wait_for()  # the article, not the card before it
     # Wait for the slide-in to finish: until then the touch lands on the (inert) feed behind it.
     for _ in range(50):
         if pg.evaluate("new DOMMatrix(getComputedStyle(document.getElementById('reader')).transform).m41") == 0:

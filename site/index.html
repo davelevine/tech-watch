@@ -243,7 +243,8 @@
   .reader-source:hover { color: var(--accent); }
   .reader-source { flex: 1; min-width: 0; line-height: 44px; color: var(--text-muted); font-size: .8125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .reader-body { position: relative; flex: 1; min-height: 0; }
-  .reader-body iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  .reader-body iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  .reader-body iframe.loading { visibility: hidden; }
 </style>
 </head>
 <body>
