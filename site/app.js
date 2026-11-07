@@ -260,14 +260,16 @@ pre { overflow-x: auto; padding: 12px 14px; border-radius: 8px; background: var(
 pre code { padding: 0; background: none; font: inherit; }
 table { display: block; overflow-x: auto; border-collapse: collapse; font-size: .875rem; } th, td { padding: 4px 8px; border: 1px solid var(--border); } th { font-weight: 700; }
 hr { border: 0; border-top: 1px solid var(--border); }
+.late { animation: late .2s ease .3s both; } @keyframes late { from { opacity: 0; } }
 .status { color: var(--text-muted); font: .9375rem/1.5 Inter, system-ui, sans-serif; }
 .pill { display: inline-block; padding: 10px 18px; border: 1px solid var(--accent); border-radius: 999px; font: 600 .9375rem/1.4 Inter, system-ui, sans-serif; text-decoration: none; }
 @media (max-width: 600px) { main { padding: 24px 18px 80px; } .pill { padding: 12px 18px; } }
 </style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}${minutes ? ` · ${minutes} min read` : ''}</div>${why ? `<div class="todo"><b>What to do</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
 }
 // What we already know about a story, from data.json: shown at once, and all that's left if the article can't be fetched.
-const storyCard = (i, status) => `${i.summary ? `<p>${esc(i.summary)}</p>` : ''}<p class="status">${status}</p>
-<a class="pill" href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a>`;
+// While loading, the body holds back a moment: most articles arrive before the panel has landed, and then just appear.
+const storyCard = (i, status, loading) => `<div${loading ? ' class="late"' : ''}>${i.summary ? `<p>${esc(i.summary)}</p>` : ''}<p class="status">${status}</p>
+<a class="pill" href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a></div>`;
 // Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
 function showInReader(i, html, why, minutes) {
   const frame = document.createElement('iframe');
@@ -298,7 +300,7 @@ function openReader(i, { fromHash = false } = {}) {
   const why = weekly?.items?.find(p => p.url === i.url)?.why;
   $('reader-source').textContent = `${i.publisher} · ${domain(i.url)}`;
   $('reader-source').href = i.url;
-  showInReader(i, storyCard(i, 'Loading the full article…'), why);  // before the fetch: the fetch can only upgrade this
+  showInReader(i, storyCard(i, 'Loading the full article…', true), why);  // before the fetch: the fetch can only upgrade this
   document.body.classList.add('reading');
   $('reader').setAttribute('aria-hidden', 'false');
   document.querySelectorAll('.feed, #top').forEach(el => { el.inert = true; });

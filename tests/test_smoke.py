@@ -278,7 +278,9 @@ def test_reader_shows_the_story_before_the_fetch_finishes(browser):
     assert frame.locator("h1").inner_text() == title
     assert frame.locator(".todo b").inner_text().lower() == "what to do"
     assert frame.locator(".status").inner_text() == "Loading the full article\u2026"
-    assert frame.locator("main > p").first.inner_text() != ""  # the summary
+    assert frame.locator("main p").first.inner_text() != ""  # the summary
+    # Its body holds back past the panel's slide, so a fast article replaces the card before it's ever seen.
+    assert frame.locator(".late").evaluate("e => getComputedStyle(e).animationDelay") == "0.3s"
     for _ in range(50):
         if held:
             break
@@ -324,6 +326,7 @@ def test_reader_keeps_the_card_when_the_article_is_blocked(browser):
     frame.locator(".status", has_text="doesn\u2019t allow a reader view").wait_for()
     assert frame.locator("h1").inner_text() == title and frame.locator(".todo").count() == 1
     assert frame.locator("a.pill").get_attribute("href") == url
+    assert frame.locator(".late").count() == 0  # no second hold-back once it's the final state
     # Pinned to the top of the pane, not centred in it.
     assert frame.locator("h1").bounding_box()["y"] < 120
 
