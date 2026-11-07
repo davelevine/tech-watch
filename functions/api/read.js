@@ -9,7 +9,7 @@ const MIN_TEXT = 500; // shorter "articles" are usually cookie walls or app shel
 const MIN_FEED_WORDS = 300; // less is a teaser, not the article
 const MIN_PAGE_WORDS = 300; // a page with less visible text than this is a shell, not an article that didn't parse
 const PAGE_TIMEOUT = 15000; // some pages take 10s from here, and the reader's card means nobody's staring at nothing
-const FEED_TIMEOUT = 5000;
+const FEED_TIMEOUT = 10000; // one full-article feed is 4MB
 const CHALLENGE = /cf-challenge|_cf_chl_opt|Just a moment|Access Denied|Request unsuccessful|Incapsula/i; // about bot-protection vendors, not publishers
 const DROP = 'script, style, noscript, iframe, object, embed, form, input, button, link, meta, svg';
 
