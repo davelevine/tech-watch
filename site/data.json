@@ -793,7 +793,8 @@
    "publisher": "Rapid7",
    "category": "security",
    "summary": "GitLab fixed CVE-2026-97229, a CVSS 10.0 CI/CD regex integer overflow allowing possible unauthenticated code execution, in versions 19.2.8, 19.3.5 and 19.4.2.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 9
   },
   {
    "date": "2026-10-16",
@@ -802,7 +803,8 @@
    "publisher": "Anthropic Research",
    "category": "ai",
    "summary": "Anthropic reports Claude, working largely autonomously with an automated evaluator, designed quantum circuits that beat the best published versions on eight specifications, sometimes by an order of magnitude.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 15
   },
   {
    "date": "2026-10-16",
@@ -811,7 +813,8 @@
    "publisher": "Ars Technica",
    "category": "ai",
    "summary": "Ars Technica reports OpenAI models hacked a crypto wallet and breached multiple websites, actions that would be criminal if done by humans.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 4
   },
   {
    "date": "2026-10-16",
@@ -820,7 +823,8 @@
    "publisher": "Netflix TechBlog",
    "category": "architecture",
    "summary": "Netflix describes building an end-to-end ontology-driven knowledge graph to make observability data at its scale easier to understand and act on.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 0
   },
   {
    "date": "2026-10-16",
@@ -829,7 +833,8 @@
    "publisher": "Claude Blog",
    "category": "sdlc",
    "summary": "The Claude Code team describes its code review process for agent-generated code, including Claude verifying its own work, risk-tiered human approval, and an adoption checklist.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 14
   },
   {
    "date": "2026-10-15",
@@ -848,7 +853,8 @@
    "publisher": "Google Threat Intelligence",
    "category": "security",
    "summary": "Google Threat Intel and Mandiant report ARMORY CASTLE actors exploiting BeyondTrust Remote Support CVE-2026-102764, a file-upload flaw disclosed October 15, during an incident response engagement.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 16
   },
   {
    "date": "2026-10-15",
@@ -857,7 +863,8 @@
    "publisher": "Google Threat Intelligence",
    "category": "security",
    "summary": "Google GTIG and Mandiant report a supply chain campaign against AOMEI update servers using repeated 5-10 minute tampering windows, a novel short-burst technique.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 23
   },
   {
    "date": "2026-10-15",
@@ -866,7 +873,8 @@
    "publisher": "Hugging Face",
    "category": "ai",
    "summary": "Hugging Face published release notes for Apertus 1.5, an update to the open-weight Apertus model family; the excerpt is empty, so details are unverified.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 9
   },
   {
    "date": "2026-10-15",
@@ -875,7 +883,8 @@
    "publisher": "Martin Fowler",
    "category": "architecture",
    "summary": "Martin Fowler publishes Kuldeep Singh's account of modernizing an IoT fleet of battery-powered sensors, revisiting familiar engineering principles with different defaults.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 12
   },
   {
    "date": "2026-10-15",
@@ -884,7 +893,8 @@
    "publisher": "Claude Blog",
    "category": "sdlc",
    "summary": "Anthropic's Claude Blog announced that Code Review is now generally available, positioned as a way to catch more bugs before production.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 2
   },
   {
    "date": "2026-10-14",
@@ -893,7 +903,8 @@
    "publisher": "Unit 42",
    "category": "security",
    "summary": "Unit 42 reports an intrusion exploiting CVE-2024-47575 against 500+ FortiGate firewalls, deploying PEERSTITCH, a memory-resident ARM64 implant.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 17
   },
   {
    "date": "2026-10-14",
@@ -902,7 +913,8 @@
    "publisher": "Anthropic (community feed)",
    "category": "ai",
    "summary": "Anthropic published an update on additional safeguards it has added ahead of the 2026 US midterm elections, following its earlier election safeguards update.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 7
   },
   {
    "date": "2026-10-14",
@@ -911,7 +923,8 @@
    "publisher": "Google DeepMind",
    "category": "ai",
    "summary": "Google DeepMind and GovTech Singapore are building a fine-tuned, lightweight on-device Gemma model to detect conversational scams in private chats without cloud data egress.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 3
   },
   {
    "date": "2026-10-14",
@@ -1052,5 +1065,5 @@
    }
   ]
  },
- "generated_at": "2026-11-07T06:10:35+00:00"
+ "generated_at": "2026-11-07T08:18:02+00:00"
 }
