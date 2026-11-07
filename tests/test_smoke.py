@@ -44,7 +44,7 @@ def open_site(browser, **context):
 
 def first_card(pg):
     card = pg.locator("a.card").first
-    return card, card.locator(".card-title").inner_text()
+    return card, card.locator(".card-title").text_content()  # inner_text is empty until content-visibility renders the card
 
 
 def reading(pg):
@@ -91,7 +91,7 @@ def test_phone_menu(browser):
     # Tapping away closes the menu without opening the article underneath.
     pg.locator("a.card").nth(1).scroll_into_view_if_needed()
     x, y = pg.evaluate("""() => { const r = [...document.querySelectorAll('a.card')].map(c => c.getBoundingClientRect())
-        .find(r => r.top > 300 && r.top + r.height / 2 < innerHeight); return [r.left + r.width / 2, r.top + r.height / 2]; }""")
+        .find(r => r.bottom > 340 && r.top < innerHeight - 40); return [r.left + r.width / 2, Math.max(r.top, 300) + 20]; }""")  # below the drawer
     pg.tap("#menu-btn")
     assert pg.evaluate("document.getElementById('menu').getBoundingClientRect().width") == 320  # full width
     pg.wait_for_timeout(300)
