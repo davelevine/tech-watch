@@ -47,5 +47,18 @@
     <outline type="rss" text="The Record" xmlUrl="https://therecord.media/feed"/>
     <outline type="rss" text="Trail of Bits" xmlUrl="https://blog.trailofbits.com/feed/"/>
     <outline type="rss" text="Warp" xmlUrl="https://www.warp.dev/blog/feed.xml"/>
+    <outline type="rss" text="Anthropic Red Team" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_red.xml"/>
+    <outline type="rss" text="Anthropic Research" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_research.xml"/>
+    <outline type="rss" text="Claude Blog" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml"/>
+    <outline type="rss" text="UK AISI" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_aisi.xml"/>
+    <outline type="rss" text="Google Threat Intelligence" xmlUrl="https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/"/>
+    <outline type="rss" text="Unit 42" xmlUrl="https://unit42.paloaltonetworks.com/feed/"/>
+    <outline type="rss" text="Rapid7" xmlUrl="https://www.rapid7.com/blog/rss/"/>
+    <outline type="rss" text="Wordfence" xmlUrl="https://www.wordfence.com/blog/feed/"/>
+    <outline type="rss" text="Wiz" xmlUrl="https://www.wiz.io/feed/rss.xml"/>
+    <outline type="rss" text="Aikido" xmlUrl="https://www.aikido.dev/blog/rss.xml"/>
+    <outline type="rss" text="Mozilla Security" xmlUrl="https://blog.mozilla.org/security/feed/"/>
+    <outline type="rss" text="Railway" xmlUrl="https://blog.railway.com/rss.xml"/>
+    <outline type="rss" text="Ars Technica" xmlUrl="https://feeds.arstechnica.com/arstechnica/technology-lab"/>
   </body>
 </opml>
