@@ -21,7 +21,7 @@ ROOT = Path(__file__).parent
 SITE = ROOT / "site"
 STATE = ROOT / "state.json"
 SITE_URL = (os.environ.get("SITE_URL") or "https://triage.levine.io").rstrip("/")  # forks set the SITE_URL repo variable
-MODEL = os.environ.get("TRIAGE_MODEL", "claude-haiku-5-5")
+MODEL = os.environ.get("UPSHOT_MODEL", "claude-haiku-5-5")
 CLAUDE = os.environ.get("CLAUDE_BIN", "claude")  # Claude Code CLI
 CATEGORIES = ["ai", "security", "architecture", "sdlc", "regulation", "other"]
 KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
@@ -245,7 +245,7 @@ def rss(items):
         f"<pubDate>{format_datetime(datetime.fromisoformat(i['date']).replace(tzinfo=timezone.utc))}</pubDate></item>"
         for i in items[:50]
     )
-    return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Triage</title>'
+    return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Upshot</title>'
             f"<link>{SITE_URL}/</link><description>AI, security and architecture news, summarized.</description>"
             f"{entries}</channel></rss>\n")
 
@@ -327,7 +327,7 @@ def run_summary(feeds, feeds_failed, new, scores, kept, repeated, dead):
                   key=lambda x: (x[0]["category"], x[1]["title"]))
     row = lambda r, i: f"| {r['category']} | {r['relevance']} | {i['publisher']} | [{i['title']}]({i['url']}) |"
     lines = [
-        "## Triage build", "",
+        "## Upshot build", "",
         f"**Feeds:** {feeds} fetched, {feeds_failed} failed · **New stories:** {len(new)} · **Scored:** {len(scored)}"
         f" ({len(new) - len(scored)} failed, retried next run) · **Kept:** {len(kept)} · **Dropped as repeats:** {len(repeated)}", "",
     ]

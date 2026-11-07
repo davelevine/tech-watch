@@ -9,7 +9,7 @@
 <h1>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/wordmark-dark.svg">
-    <img src=".github/wordmark-light.svg" alt="Triage" width="200">
+    <img src=".github/wordmark-light.svg" alt="Upshot" width="200">
   </picture>
 </h1>
 
@@ -27,7 +27,7 @@ The week's tech news, minus the noise.
 
 ## Overview
 
-Triage is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials with a line on why they matter. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
+Upshot is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials with a line on why they matter. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
 
 There's no server and no database. A scheduled GitHub Actions job does the work and commits a small JSON file, and a single static page renders it:
 
@@ -199,7 +199,7 @@ The knobs live at the top of [`build.py`](build.py):
 | `PER_FEED` | 10 | Newest entries taken per feed per run (env-overridable) |
 | `KEEP_DAYS` | 90 | Prune articles and seen URLs older than this |
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
-| `TRIAGE_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
+| `UPSHOT_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
 | `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
 | `SITE_URL` | `https://triage.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
 
