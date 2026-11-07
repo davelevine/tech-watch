@@ -5,6 +5,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const cat = c => (c in CATS ? c : 'other');
 const domain = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const PAGE = 40;
+const STALE_MINUTES = 12 * 60;  // three missed builds
 const io = new IntersectionObserver(([e]) => { if (e.isIntersecting && limit < shown.length) { limit += PAGE; renderPage(); } }, { rootMargin: '800px' });
 let items = [], filter = 'all', shown = [], limit = PAGE, generatedAt = null;
 
@@ -55,9 +56,9 @@ function renderPage() {
     const d = dayLabel(i.date);
     counts[d] = (counts[d] || 0) + 1;
     minutes[d] = (minutes[d] || 0) + (i.minutes || 0);
-    if (!i.minutes) unknown[d] = true;  // some sources block the reader, so the total is a floor
+    if (!i.minutes) unknown[d] = true;
   }
-  const dayMeta = d => `· ${counts[d]} ${counts[d] === 1 ? 'story' : 'stories'}${minutes[d] ? ` · ${minutes[d]}${unknown[d] ? '+' : ''} min` : ''}`;
+  const dayMeta = d => `· ${counts[d]} ${counts[d] === 1 ? 'story' : 'stories'}${unknown[d] ? '' : ` · ${minutes[d]} min`}`;  // only a full count: a floor would teach people to ignore it
   for (const i of shown.slice(0, limit)) (groups[dayLabel(i.date)] ||= []).push(i);
   $('items').innerHTML = shown.length ? Object.entries(groups).map(([d, list]) => `
     <div class="date-label"><span>${d}</span><span class="day-meta">${dayMeta(d)}</span></div>
@@ -167,8 +168,11 @@ function showUpdated() {
   const el = $('updated'), mins = Math.max(0, (Date.now() - Date.parse(generatedAt)) / 60e3);
   el.dateTime = generatedAt;
   el.title = new Date(generatedAt).toLocaleString();
-  el.innerHTML = '<span>Updated </span>' + (mins < 1 ? 'just now' : mins < 60 ? `${Math.floor(mins)}m ago`
-    : mins < 48 * 60 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`);
+  const ago = mins < 1 ? 'just now' : mins < 60 ? `${Math.floor(mins)}m ago`
+    : mins < 48 * 60 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
+  el.textContent = `Updated ${ago}`;
+  $('stale').hidden = mins < STALE_MINUTES;
+  $('stale').textContent = `Last updated ${ago} · the build may be stalled`;
 }
 // Redraws only when a new build has landed, keeping the filter, search and loaded depth.
 function load() {

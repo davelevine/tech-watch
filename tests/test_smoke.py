@@ -5,7 +5,7 @@ import json
 import os
 import re
 import urllib.parse
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -151,6 +151,51 @@ def test_essentials_card_layout(browser):
         d = c.querySelector('.weekly-meta > :last-child'); return m.right <= r.right && d.scrollWidth <= d.clientWidth && d.textContent.startsWith('·'); }"""
     assert card.evaluate(fits)
     assert pg.problems == []
+
+
+def stale_site(browser, hours, **context):
+    ctx = browser.new_context(**context)
+    pg = ctx.new_page()
+    def patched(route):
+        data = route.fetch().json()
+        data["generated_at"] = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat(timespec="seconds")
+        route.fulfill(json=data)
+    ctx.route("**/data.json*", patched)
+    pg.goto(URL)
+    pg.wait_for_selector("a.card")
+    return pg
+
+
+def test_stale_band_appears_after_twelve_hours(browser):
+    pg = stale_site(browser, 11, viewport={"width": 1300, "height": 900})
+    assert pg.locator("#stale").is_hidden()
+    pg = stale_site(browser, 14, viewport={"width": 1300, "height": 900})
+    assert pg.locator("#stale").inner_text() == "Last updated 14h ago · the build may be stalled"
+    assert pg.get_attribute("#stale", "href").endswith("/actions/workflows/build.yml")
+
+
+def test_stale_band_keeps_the_filter_drawer_under_the_search_row(browser):
+    pg = stale_site(browser, 14, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)
+    assert pg.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    pg.tap("#filter-toggle")
+    pg.wait_for_function("() => !document.getElementById('filters').getAnimations().length")
+    assert pg.evaluate("Math.round(document.getElementById('filters').getBoundingClientRect().top) === Math.round(document.querySelector('.subheader').getBoundingClientRect().bottom)")
+
+
+def test_day_minutes_show_only_when_every_story_has_one(browser):
+    ctx = browser.new_context(viewport={"width": 1300, "height": 900}, timezone_id="UTC")
+    pg = ctx.new_page()
+    today = datetime.now(timezone.utc).date().isoformat()
+    yesterday = (datetime.now(timezone.utc).date() - timedelta(days=1)).isoformat()
+    def patched(route):
+        data = route.fetch().json()
+        a, b, c = data["items"][:3]
+        data["items"] = [{**a, "date": today, "minutes": 4}, {**b, "date": today, "minutes": 3}, {**c, "date": yesterday, "minutes": 0}]
+        route.fulfill(json=data)
+    ctx.route("**/data.json*", patched)
+    pg.goto(URL)
+    pg.wait_for_selector("a.card")
+    assert pg.locator(".day-meta").all_inner_texts()[:2] == ["· 2 stories · 7 min", "· 1 story"]
 
 
 def test_wide_screens_keep_the_filter_row(browser):

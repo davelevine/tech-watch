@@ -1064,24 +1064,24 @@
   "selected_on": "2026-11-07",
   "items": [
    {
-    "url": "https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html",
-    "why": "A public OpenSSH flaw (CVE-2026-123158, CVSS 8.1) was exploited within hours of disclosure, so check musl/PAM-disabled builds and patch now."
-   },
-   {
-    "url": "https://thehackernews.com/2026/11/red-hat-patches-98-rated-linux-tcp-rce.html",
-    "why": "A remote, unauthenticated use-after-free in Linux IPv4 TCP rated 9.8 is patched by Red Hat, while Ubuntu fixes are still in opt-in testing."
-   },
-   {
-    "url": "https://thehackernews.com/2026/11/chainalysis-breach-exposes-all-users.html",
-    "why": "Chainalysis says an agentic AI attack exposed credentials and live tokens for all users, forcing shutdown of two services; rotate any exposed access."
-   },
-   {
     "url": "https://www.bleepingcomputer.com/news/security/sonicwall-warns-of-new-ssl-vpn-mfa-bypass-flaw-exploited-in-attacks/",
-    "why": "SonicWall patched seven SonicOS firewall flaws, including an SSL-VPN MFA bypass already exploited in the wild; patch edge VPN appliances immediately."
+    "why": "Patch SonicOS now; the SSL-VPN bypass is already being exploited against firewalls."
    },
    {
     "url": "https://socket.dev/blog/shai-hulud-descendant-malicious-ruby-gem",
-    "why": "A Shai-Hulud-descendant worm in a malicious Ruby gem steals credentials on install and poisons AI coding tools; audit installs, and be careful revoking GitHub tokens."
+    "why": "Audit installs for this gem; revoke stolen GitHub tokens carefully, since revocation triggers wiping."
+   },
+   {
+    "url": "https://thehackernews.com/2026/11/chainalysis-breach-exposes-all-users.html",
+    "why": "If you used Chainalysis, rotate passwords and any tokens now; assume they're exposed."
+   },
+   {
+    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
+    "why": "Audit pull_request_target workflows before December 2 to avoid breaking CI."
+   },
+   {
+    "url": "https://www.aikido.dev/blog/linux-kernel-tcp-rce-vulnerability-cve-2026-98432",
+    "why": "Patch Linux kernels promptly; CVSS 9.8 remote flaw with code execution potential."
    }
   ]
  },
