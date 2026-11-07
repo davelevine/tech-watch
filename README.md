@@ -190,7 +190,9 @@ The knobs live at the top of [`build.py`](build.py):
 
 | Setting | Default | What it does |
 | ------- | ------- | ------------ |
-| `MIN_RELEVANCE` | 8 for AI, Security and Regulation, 7 for the rest | Score a story needs to be kept |
+| `MIN_RELEVANCE` | 8 for Security and Regulation, 7 for Other, 6 for the rest | Score a story needs to be kept |
+| `CATEGORY_MAX` | 2 for AI and Security, 1 for Architecture and SDLC | Stories per day, to keep the mix balanced |
+| `NEWS_SOURCES` | Six outlets | Lose ties to, and get replaced by, the original source |
 | `DAILY_MAX` | 10 | Safety cap for unusually big news days |
 | `DEDUPE_DAYS` | 7 | How far back to look for repeat coverage |
 | `FRESH_DAYS` | 3 | Ignore feed entries older than this (env-overridable) |

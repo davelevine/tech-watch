@@ -48,14 +48,39 @@ def test_rss_is_well_formed():
 
 
 def test_cap_per_day_keeps_most_relevant():
-    items = [{"date": "2026-11-05", "url": f"https://x.test/{n}", "relevance": n % 10 + 1} for n in range(14)]
-    items.append({"date": "2026-11-04", "url": "https://x.test/old"})
+    items = [{"date": "2026-01-02", "category": "other", "relevance": n, "url": str(n)} for n in range(build.DAILY_MAX + 5)]
+    items.append({"date": "2026-01-01", "category": "other", "relevance": 1, "url": "old"})
     out = build.cap_per_day(items)
-    today = [i for i in out if i["date"] == "2026-11-05"]
-    dropped = [i for i in items[:14] if i not in today]
-    assert len(today) == build.DAILY_MAX
-    assert min(i["relevance"] for i in today) >= max(i["relevance"] for i in dropped)
-    assert out[-1]["url"] == "https://x.test/old"
+    today = [i for i in out if i["date"] == "2026-01-02"]
+    assert len(today) == build.DAILY_MAX and today[0]["relevance"] == build.DAILY_MAX + 4  # most relevant first
+    assert out[-1]["url"] == "old"                                                          # newest day first
+
+
+def test_cap_per_day_balances_categories_and_prefers_original_sources():
+    day = lambda cat, rel, pub, url: {"date": "2026-01-02", "category": cat, "relevance": rel, "publisher": pub, "url": url}
+    out = build.cap_per_day([
+        day("security", 8, "The Hacker News", "news"), day("security", 8, "Rapid7", "orig-1"),
+        day("security", 8, "Wiz", "orig-2"), day("security", 9, "BleepingComputer", "top"),
+        day("architecture", 6, "Figma", "a1"), day("architecture", 6, "Cloudflare Blog", "a2"),
+        day("regulation", 8, "The Record", "r1"),
+    ])
+    urls = [i["url"] for i in out]
+    assert {"top", "orig-1"} <= set(urls) and "news" not in urls and "orig-2" not in urls  # score, then original source
+    assert "a1" in urls and "a2" not in urls  # max 1, first one kept
+    assert "r1" in urls                       # no limit set for this category
+
+
+def test_upgrade_source_swaps_news_for_the_original():
+    r = {"category": "security", "summary": "new summary", "relevance": 8}
+    old = {"title": "Big Flaw", "url": "https://news.test/a", "publisher": "BleepingComputer", "relevance": 9, "date": "2026-01-01", "minutes": 2}
+    item = {"title": "Our advisory", "url": "https://vendor.test/a", "publisher": "Rapid7"}
+    assert build.upgrade_source([old], "big flaw", item, r)
+    assert old["url"] == "https://vendor.test/a" and old["publisher"] == "Rapid7" and old["summary"] == "new summary"
+    assert old["relevance"] == 9 and old["date"] == "2026-01-01" and "minutes" not in old  # keeps its place; time refetched
+    assert not build.upgrade_source([old], "our advisory", {**item, "url": "x", "publisher": "Wiz"}, r)  # already original
+    other = {"title": "Other", "url": "n", "publisher": "SecurityWeek"}
+    assert not build.upgrade_source([other], "Other", {**item, "publisher": "The Record"}, r)            # news for news
+    assert other["url"] == "n"
 
 
 def test_scoring_never_sees_recent_headlines(monkeypatch):

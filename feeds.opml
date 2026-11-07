@@ -3,7 +3,6 @@
   <head><title>Triage feeds</title></head>
   <body>
     <outline type="rss" text="Anthropic (community feed)" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"/>
-    <outline type="rss" text="AWS Machine Learning Blog" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/"/>
     <outline type="rss" text="AWS Security Blog" xmlUrl="https://aws.amazon.com/blogs/security/feed/"/>
     <outline type="rss" text="BleepingComputer" xmlUrl="https://www.bleepingcomputer.com/feed/"/>
     <outline type="rss" text="Cloudflare Blog" xmlUrl="https://blog.cloudflare.com/rss/"/>

@@ -27,9 +27,12 @@ CATEGORIES = ["ai", "security", "architecture", "sdlc", "regulation", "other"]
 KEEP_DAYS = 90        # items and seen-URLs older than this are pruned
 FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries published longer ago than this
 PER_FEED = int(os.environ.get("PER_FEED", 10))     # newest N entries per feed per run (caps huge feeds)
-# 1-10 relevance an item needs to be kept. The busy categories need more; the quieter ones score lower
-# even for good pieces (a strong architecture write-up rarely rates like an exploited zero-day).
-MIN_RELEVANCE = {"ai": 8, "security": 8, "architecture": 7, "sdlc": 7, "regulation": 8, "other": 7}
+# 1-10 relevance an item needs to be kept, set from how Haiku actually scores: it gives plenty of security
+# stories an 8, but a strong architecture, SDLC or AI piece rarely gets above a 6.
+MIN_RELEVANCE = {"ai": 6, "security": 8, "architecture": 6, "sdlc": 6, "regulation": 8, "other": 7}
+CATEGORY_MAX = {"ai": 2, "security": 2, "architecture": 1, "sdlc": 1}  # per day, keeps the mix balanced
+# Report on stories first published elsewhere: the original source wins ties and replaces their copy of a repeat.
+NEWS_SOURCES = {"Ars Technica", "BleepingComputer", "InfoQ", "SecurityWeek", "The Hacker News", "The Record"}
 DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' headlines
 DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the real filtering
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
@@ -262,12 +265,36 @@ def repeats(dup_of, n, covered_ids, recent_titles):
 
 
 def cap_per_day(items):
-    """Newest day first; within a day, the DAILY_MAX most relevant (ties keep their order)."""
+    """Newest day first; within a day, each category's most relevant up to CATEGORY_MAX, then the DAILY_MAX most
+    relevant overall. Ties go to the original source over a news outlet, then keep their order."""
+    rank = lambda i: (-i.get("relevance", 0), i.get("publisher") in NEWS_SOURCES)
     by_day = {}
     for i in items:
         by_day.setdefault(i["date"], []).append(i)
-    return [i for day in sorted(by_day, reverse=True)
-            for i in sorted(by_day[day], key=lambda i: -i.get("relevance", 0))[:DAILY_MAX]]
+    out = []
+    for day in sorted(by_day, reverse=True):
+        counts, picked = {}, []
+        for i in sorted(by_day[day], key=rank):
+            cat = i.get("category")
+            counts[cat] = counts.get(cat, 0) + 1
+            if counts[cat] <= CATEGORY_MAX.get(cat, DAILY_MAX):
+                picked.append(i)
+        out += picked[:DAILY_MAX]
+    return out
+
+
+def upgrade_source(items, title, item, result):
+    """If the story headlined `title` came from a news outlet and `item` is the original source, swap it in, keeping
+    the story's place in the feed. Returns whether it did."""
+    if item["publisher"] in NEWS_SOURCES:
+        return False
+    for old in items:
+        if norm(old["title"]) == norm(title) and old.get("publisher") in NEWS_SOURCES:
+            old.pop("minutes", None)
+            old.update({k: item[k] for k in ("title", "url", "publisher")},
+                       category=result["category"], summary=result["summary"], relevance=max(old.get("relevance", 0), result["relevance"]))
+            return True
+    return False
 
 
 def add_reading_times(items, limit=30):
@@ -389,10 +416,16 @@ def main():
             continue
         recent_titles, covered = {norm(t) for t in recent}, set()
         for n, (item, r) in enumerate(chunk):
-            repeat = repeats(dups.get(item["url"]), n, covered, recent_titles)
+            dup_of = dups.get(item["url"])
+            repeat = repeats(dup_of, n, covered, recent_titles)
             covered.add(n)
             if repeat:
-                repeated.append(item)
+                target = chunk[int(dup_of)][0]["title"] if str(dup_of).strip().isdigit() else dup_of
+                if upgrade_source(data["items"], target, item, r):
+                    kept.append((item, r))
+                    recent.append(item["title"])
+                else:
+                    repeated.append(item)
                 continue
             kept.append((item, r))
             recent.append(item["title"])
