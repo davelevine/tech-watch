@@ -5,6 +5,7 @@ import json
 import os
 import re
 import urllib.parse
+from datetime import date, timedelta
 
 import pytest
 
@@ -137,6 +138,23 @@ def test_wcag(browser, scheme):
     assert violations() == [] and pg.evaluate(small) == []
     assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
     assert pg.problems == []
+
+
+def test_one_today_section_when_utc_is_already_tomorrow(browser):
+    ctx = browser.new_context(timezone_id="America/New_York")
+    pg = ctx.new_page()
+    today = pg.evaluate("new Date().toLocaleDateString('en-CA')")  # YYYY-MM-DD in that zone
+    tomorrow = (date.fromisoformat(today) + timedelta(days=1)).isoformat()
+    def patched(route):
+        data = route.fetch().json()
+        data["items"] = [{**item, "date": day} for item, day in zip(data["items"], [tomorrow, today, today])]
+        route.fulfill(json=data)
+    ctx.route("**/data.json*", patched)
+    pg.goto(URL)
+    pg.wait_for_selector("a.card")
+    today_labels = pg.locator(".date-label", has_text="Today")
+    assert today_labels.count() == 1
+    assert today_labels.locator(".count").inner_text() == "3"
 
 
 def test_reader_and_frame_relay_run_under_csp(browser):
