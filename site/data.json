@@ -19,7 +19,8 @@
    "category": "sdlc",
    "summary": "Grab describes a layered defense strategy to prevent, detect, and contain mobile app crashes as AI-generated code increases change volume per release.",
    "relevance": 6,
-   "added": "2026-11-07T12:17:57+00:00"
+   "added": "2026-11-07T12:17:57+00:00",
+   "minutes": 2
   },
   {
    "date": "2026-11-06",
@@ -1084,5 +1085,5 @@
    }
   ]
  },
- "generated_at": "2026-11-07T12:17:59+00:00"
+ "generated_at": "2026-11-07T14:57:05+00:00"
 }
