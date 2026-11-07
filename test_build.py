@@ -137,6 +137,8 @@ def test_reading_times_use_the_sites_reader(monkeypatch):
              "https://x.test/blocked": {"frameable": False}}                       # no content -> 0, retried next run
     seen = []
     def fake_open(req, timeout):
+        if "url=" not in req.full_url:  # the fallback, fetching the page itself
+            raise build.urllib.error.HTTPError(req.full_url, 403, "blocked", {}, None)
         target = build.urllib.parse.unquote(req.full_url.split("url=")[1])
         seen.append(target)
         if target not in pages:
@@ -149,6 +151,33 @@ def test_reading_times_use_the_sites_reader(monkeypatch):
     seen.clear()
     build.add_reading_times(items)
     assert sorted(seen) == ["https://x.test/blocked", "https://x.test/new"]  # a 0 is retried
+
+
+def test_reading_times_prefer_whole_articles_in_feeds(monkeypatch):
+    monkeypatch.setattr(build.urllib.request, "urlopen", lambda *a, **k: 1 / 0)  # never reached for a known item
+    items = [{"url": "https://x.test/a", "minutes": 0}]
+    build.add_reading_times(items, {"https://x.test/a": 7})
+    assert items[0]["minutes"] == 7
+
+
+def test_feed_minutes_ignores_teasers():
+    long = "<p>" + "word " * 690 + "</p>"
+    fetched = {"f": ("Feed", [{"link": "https://x.test/full", "content": [{"value": long}]},
+                              {"link": "https://x.test/summary", "summary": long},
+                              {"link": "https://x.test/teaser", "summary": "word " * 25}]), "dead": None}
+    assert build.feed_minutes(fetched) == {"https://x.test/full": 3, "https://x.test/summary": 3}
+
+
+def test_page_words_needs_an_article_and_real_length(monkeypatch):
+    import io
+    body = {}
+    monkeypatch.setattr(build.urllib.request, "urlopen", lambda *a, **k: io.BytesIO(body["html"].encode()))
+    body["html"] = "<nav>" + "menu " * 900 + "</nav><article><script>x y</script><p>" + "word " * 500 + "</p></article>"
+    assert build.page_words("https://x.test/a") == 500       # the article, not the page around it
+    body["html"] = "<article>" + "word " * 20 + "</article>"
+    assert build.page_words("https://x.test/a") == 0         # a stub
+    body["html"] = "<div>" + "word " * 900 + "</div>"
+    assert build.page_words("https://x.test/a") == 0         # nothing marks the story
 
 
 def test_run_summary_counts_and_near_misses():

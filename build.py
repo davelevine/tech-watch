@@ -42,6 +42,7 @@ UA = "upshot/1.0 (+https://github.com/davelevine/upshot)"
 # The site's edge blocks non-browser user agents, so its own reader endpoint is called as a browser.
 BROWSER_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 WORDS_PER_MINUTE = 230
+MIN_ARTICLE_WORDS = 300  # less than this in a feed or page is probably a teaser, not the article
 TRACKING = re.compile(r"^(utm_|ref$|source$|fbclid$|gclid$)")
 
 
@@ -210,7 +211,8 @@ def find_repeats(batch, recent):
 
 WEEKLY_PROMPT = """From this week's tech news, pick the 5 items a busy senior engineer most needs to know about.
 Prefer concrete releases, incidents and shifts over opinion. Avoid picking two items about the same story.
-For each give the item id and "why": one sentence (max 25 words) on why it matters.
+For each give the item id and "why": what a reader should do or what the consequence is, in one sentence of at
+most 15 words. Don't restate the headline or describe the story; assume they've just read the title.
 Return JSON: {"picks": [{"id", "why"}, ...]}."""
 
 WEEKLY_SCHEMA = {
@@ -297,10 +299,44 @@ def upgrade_source(items, title, item, result):
     return False
 
 
-def add_reading_times(items, limit=30):
-    """Fill in "minutes" for live articles that lack it, using the site's own reader extractor (/api/read only
-    serves articles already on the site, so new ones get theirs on the next run). Only the number is kept.
-    0 means the reader got nothing: shown as nothing, and retried, since some sources block only some requests."""
+def words_in(html):
+    return len(re.sub(r"<[^>]+>", " ", html or "").split())
+
+
+def feed_minutes(fetched):
+    """{url: minutes} for feeds that publish whole articles, which some do for sites the reader can't get into."""
+    out = {}
+    for res in fetched.values():
+        for e in (res[1] if res else ()):
+            words = max([words_in(c.get("value")) for c in e.get("content", [])] + [words_in(e.get("summary"))])
+            if e.get("link") and words >= MIN_ARTICLE_WORDS:
+                out[normalize_url(e["link"])] = max(1, round(words / WORDS_PER_MINUTE))
+    return out
+
+
+def page_words(url):
+    """Words in a page's <article>, fetched directly: some sites block the reader's host but not this one. 0 if blocked,
+    or if there's no <article> to tell the story from the page around it."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": BROWSER_UA}), timeout=20) as resp:
+            html = resp.read(3_000_000).decode("utf-8", "replace")
+    except Exception:
+        return 0
+    article = re.search(r"<article[\s\S]*?</article>", html)
+    if not article:
+        return 0
+    words = words_in(re.sub(r"<(script|style|nav|footer|header|aside)[\s\S]*?</\1>", " ", article.group(0)))
+    return words if words >= MIN_ARTICLE_WORDS else 0
+
+
+def add_reading_times(items, known=None, limit=30):
+    """Fill in "minutes" for articles that lack it: from whole articles in feeds (`known`), else the site's own reader
+    (/api/read only serves articles already on the site, so new ones get theirs on the next run), else the page itself.
+    Only the number is kept. 0 means nothing worked: shown as nothing, and retried, since some sources block only some
+    requests. Never estimated from a summary, which would make every article about a minute."""
+    for i in items:
+        if not i.get("minutes") and (known or {}).get(i["url"]):
+            i["minutes"] = known[i["url"]]
     todo = [i for i in items if not i.get("minutes")][:limit]  # newest first, so old blocked items can't crowd out new ones
 
     def one(item):
@@ -310,7 +346,7 @@ def add_reading_times(items, limit=30):
                 content = json.loads(resp.read()).get("content")
         except Exception:  # not live yet, or a transient failure: try again next run
             return item, None
-        words = len(re.sub(r"<[^>]+>", " ", content).split()) if content else 0
+        words = words_in(content) or page_words(item["url"])
         return item, max(1, round(words / WORDS_PER_MINUTE)) if words else 0
 
     with ThreadPoolExecutor(6) as ex:
@@ -444,7 +480,7 @@ def main():
         except Exception as e:
             print(f"::warning::weekly pick failed: {e}")
 
-    add_reading_times(data["items"])
+    add_reading_times(data["items"], feed_minutes(fetched))
     data["generated_at"] = now().isoformat(timespec="seconds")
     SITE.mkdir(exist_ok=True)
     data_path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")

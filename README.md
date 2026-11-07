@@ -145,7 +145,7 @@ Everything runs on GitHub Actions and Cloudflare Pages' free tiers. The only pai
    It prints a long-lived OAuth token (it lasts about a year). In the fork, go to **Settings → Secrets and variables → Actions → New repository secret**, name it `CLAUDE_CODE_OAUTH_TOKEN`, and paste the token. When it expires, builds start failing with "every scoring call failed"; run `claude setup-token` again and replace the secret.
 3. **Connect Cloudflare Pages.** Create a Pages project from your fork with production branch `main`, build command `npm ci`, and output directory `site`. Add a custom domain if you want one; the `*.pages.dev` address works as is.
 4. **Tell the build where the site lives.** Under **Settings → Secrets and variables → Actions → Variables**, add `SITE_URL` with your site's address (for example `https://news.example.com`). The build uses it for the RSS feed's links and to look up reading times through the site's reader.
-5. **Make it yours.** Point the GitHub icon in `site/index.html` at your fork, change the README badges, edit [`feeds.opml`](feeds.opml), and adjust the bars in [`build.py`](build.py) if you want more or fewer stories (see [Configuration](#configuration)).
+5. **Make it yours.** Point the GitHub icon and the stale-build link in `site/index.html` at your fork, change the README badges, edit [`feeds.opml`](feeds.opml), and adjust the bars in [`build.py`](build.py) if you want more or fewer stories (see [Configuration](#configuration)).
 6. **Run the first build.** Under **Actions → Build → Run workflow**, start it on `main`. Set `backfill_days` to `30` to fill in the last month (only as far back as each feed still lists). Pages deploys the result a minute after the build commits.
 
 <details>
