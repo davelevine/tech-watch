@@ -72,14 +72,19 @@ def test_csp_header_is_served(browser):
 def test_feed_renders(browser):
     pg = open_site(browser)
     assert pg.locator("a.card").count() > 0
-    assert pg.locator(".filter-btn").count() >= 7  # All + every category
-    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text("#updated"))
+    assert pg.locator(".filter-btn").count() >= 2  # All + each category with stories
+    assert pg.locator(".filter-btn", has_text="(0)").count() == 0
+    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text("footer #updated"))
+    assert pg.locator("header #updated").count() == 0
+    assert re.fullmatch(r"· \d+ stor(y|ies)( · \d+\+? min)?", pg.locator(".day-meta").first.inner_text())
+    assert pg.locator(".card-arrow").count() == 0 and pg.locator(".card-time").count() == 0
+    assert pg.locator(".weekly-why").first.inner_text() != ""
     assert pg.problems == []
 
 
 def test_phone_menu(browser):
     pg = open_site(browser, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)
-    assert pg.locator("#updated").is_visible() and pg.locator("#theme").is_hidden()
+    assert pg.locator("#theme").is_hidden()
     assert pg.evaluate("document.documentElement.scrollWidth <= innerWidth")
     pg.tap("#menu-btn")
     assert pg.locator("#menu a[href='/rss.xml']").is_visible()
@@ -105,7 +110,7 @@ def test_phone_menu(browser):
 def test_animations_run_under_reduced_motion(browser):
     pg = open_site(browser, viewport={"width": 412, "height": 800}, has_touch=True, is_mobile=True, reduced_motion="reduce")
     running = "s => getComputedStyle(document.querySelector(s)).transitionDuration !== '0s' && getComputedStyle(document.querySelector(s)).transitionProperty !== 'none'"
-    for selector in ("#menu", "#reader", ".thumb"):
+    for selector in ("#menu", "#reader"):
         assert pg.evaluate(running, selector), selector
     pg.tap("#menu-btn")
     pg.wait_for_function("() => document.getElementById('menu').getAnimations().length > 0 || getComputedStyle(document.getElementById('menu')).clipPath.includes('-40px')")
@@ -178,7 +183,7 @@ def test_wcag(browser, scheme):
     pg.tap("#menu-btn")
     pg.wait_for_function("() => !document.getElementById('menu').getAnimations().length")  # let the drawer finish opening
     assert violations() == [] and pg.evaluate(small) == []
-    assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
+    assert pg.get_attribute("#theme", "aria-label") == f"Switch to {'light' if scheme == 'dark' else 'dark'} mode"
     pg.keyboard.press("Escape")
     pg.tap("#filter-toggle")
     pg.wait_for_function("() => !document.getElementById('filters').getAnimations().length")
@@ -200,7 +205,7 @@ def test_one_today_section_when_utc_is_already_tomorrow(browser):
     pg.wait_for_selector("a.card")
     today_labels = pg.locator(".date-label", has_text="Today")
     assert today_labels.count() == 1
-    assert today_labels.locator(".count").inner_text() == "3"
+    assert today_labels.locator(".day-meta").inner_text().startswith("· 3 stories")
 
 
 def test_reader_and_frame_relay_run_under_csp(browser):
