@@ -79,9 +79,10 @@ function renderPage() {
   const ended = shown.length && limit >= shown.length;
   $('end').hidden = !ended;
   if (ended) {
-    const q2 = q ? ` matching \u201c${q}\u201d` : '';
-    $('end-msg').textContent = filter !== 'all' ? `That\u2019s everything in ${CATS[filter]}${q2}.`
-      : q ? `That\u2019s everything${q2}.` : `That\u2019s everything from the last ${KEEP_DAYS} days.`;
+    const n = shown.length, what = `${filter === 'all' ? '' : `${CATS[filter]} `}stor${n === 1 ? 'y' : 'ies'}`;
+    const days = Math.min(KEEP_DAYS, Math.ceil((Date.now() - Date.parse(items.reduce((o, i) => (i.date < o ? i.date : o), items[0].date))) / 864e5));
+    const scope = q ? ` matching \u201c${q}\u201d` : filter === 'all' ? ` from the last ${days} days` : '';  // the real span: a young site hasn't reached KEEP_DAYS
+    $('end-msg').textContent = `That\u2019s ${n === 1 ? 'the only' : `all ${n}`} ${what}${scope}.`;
   }
 }
 
@@ -178,7 +179,7 @@ function showUpdated() {
   el.title = new Date(generatedAt).toLocaleString();
   const ago = mins < 1 ? 'just now' : mins < 60 ? `${Math.floor(mins)}m ago`
     : mins < 48 * 60 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
-  el.textContent = `Updated ${ago}`;
+  el.innerHTML = `<span>Updated </span>${ago}`;
   $('stale').hidden = mins < STALE_MINUTES;
   el.hidden = !$('stale').hidden;  // one slot, two states: the band says the same thing, louder
   $('stale').textContent = `Last updated ${ago} · the build may be stalled`;
