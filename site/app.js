@@ -6,6 +6,7 @@ const cat = c => (c in CATS ? c : 'other');
 const domain = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const PAGE = 40;
 const STALE_MINUTES = 12 * 60;  // three missed builds
+const KEEP_DAYS = 90;  // build.py prunes older stories
 const io = new IntersectionObserver(([e]) => { if (e.isIntersecting && limit < shown.length) { limit += PAGE; renderPage(); } }, { rootMargin: '800px' });
 let items = [], filter = 'all', shown = [], limit = PAGE, generatedAt = null;
 
@@ -75,6 +76,13 @@ function renderPage() {
   $('items').removeAttribute('aria-busy');
   io.unobserve($('sentinel'));
   io.observe($('sentinel'));
+  const ended = shown.length && limit >= shown.length;
+  $('end').hidden = !ended;
+  if (ended) {
+    const q2 = q ? ` matching \u201c${q}\u201d` : '';
+    $('end-msg').textContent = filter !== 'all' ? `That\u2019s everything in ${CATS[filter]}${q2}.`
+      : q ? `That\u2019s everything${q2}.` : `That\u2019s everything from the last ${KEEP_DAYS} days.`;
+  }
 }
 
 function renderWeekly(weekly) {
@@ -172,6 +180,7 @@ function showUpdated() {
     : mins < 48 * 60 ? `${Math.floor(mins / 60)}h ago` : `${Math.floor(mins / 1440)}d ago`;
   el.textContent = `Updated ${ago}`;
   $('stale').hidden = mins < STALE_MINUTES;
+  el.hidden = !$('stale').hidden;  // one slot, two states: the band says the same thing, louder
   $('stale').textContent = `Last updated ${ago} · the build may be stalled`;
 }
 // Redraws only when a new build has landed, keeping the filter, search and loaded depth.

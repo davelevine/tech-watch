@@ -48,7 +48,8 @@
   .logo .fg { fill: var(--text); }
   .logo .dot { fill: var(--urgent); }
   .controls { display: flex; align-items: center; gap: 6px; }
-  .site-foot { padding: 20px 14px 32px; color: var(--text-muted); font-size: .8125rem; text-align: center; }
+  .site-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 8px; padding: 8px 14px 32px; color: var(--text-muted); font-size: .8125rem; text-align: center; }
+  .feed-status { max-width: var(--read); min-height: 26px;  /* the time arrives with the data; hold its line */ margin: 0 auto; padding: 10px 24px 0; color: var(--text-muted); font-size: .75rem; line-height: 16px; text-align: right; }
   .icon-btn { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid transparent; border-radius: var(--radius-sm); background: none; color: var(--text-muted); cursor: pointer; }
   .icon-btn svg { width: 17px; height: 17px; }
 
@@ -94,7 +95,7 @@
   .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
   .dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 999px; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 14%, transparent); }
 
-  .weekly { max-width: var(--read); margin: 0 auto; padding: 18px 24px 0; }
+  .weekly { max-width: var(--read); margin: 0 auto; padding: 4px 24px 0; }
   .weekly[hidden] { display: none; }
   .weekly-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
   .weekly-heading { position: relative; display: flex; align-items: center; gap: 8px; min-height: 32px; }
@@ -211,7 +212,7 @@
     #search { min-height: 44px; font-size: 1rem; }
     .palette-list li { min-height: 44px; }
     .reader-msg a { padding: 12px 18px; }
-    .weekly, .items { padding-left: 14px; padding-right: 14px; }
+    .feed-status, .weekly, .items { padding-left: 14px; padding-right: 14px; }
     .weekly-title { font-size: 1.0625rem; }
     .nav { display: none; }
     .rail { margin-right: -14px; padding-right: 14px; }
@@ -219,6 +220,7 @@
     .card { padding: 12px; gap: 10px; }
     .card-summary { font-size: .9375rem; }
     .back-to-top { right: 12px; bottom: 12px; }
+    .site-foot { padding-bottom: 72px; }  /* clears the back-to-top button */
     .palette { top: 8px; max-height: calc(100vh - 16px); }
     .palette-foot { display: none; }
   }
@@ -283,6 +285,7 @@
   </div>
   <div class="filters" id="filters" popover></div>
 </div>
+<div class="feed-status feed"><time id="updated"></time></div>
 <section class="weekly feed" id="weekly">
   <div class="weekly-header">
     <div class="weekly-heading">
@@ -300,7 +303,11 @@
 <div class="sr-only" id="status" role="status"></div>
 <main class="items feed" id="items" aria-busy="true"><div class="date-label skeleton" aria-hidden="true"><span class="bone" style="width:6em"></span><span class="day-meta">&nbsp;</span></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div><div class="card skeleton" aria-hidden="true"><span class="dot" style="--c:var(--border)"></span><div class="card-body"><span class="bone title" style="width:70%"></span><span class="bone" style="width:95%;margin-top:.6em"></span><span class="bone" style="width:60%;margin-top:.5em"></span></div></div></main>
 <div id="sentinel"></div>
-<footer class="site-foot feed"><time id="updated"></time></footer>
+<footer class="site-foot feed" id="end" hidden>
+  <span id="end-msg"></span>
+  <a class="icon-btn" href="/rss.xml" title="RSS feed" aria-label="RSS feed"><svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg></a>
+  <a class="icon-btn" href="https://github.com/davelevine/upshot" target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub"><svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.75c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a>
+</footer>
 <div class="reader-backdrop" id="reader-backdrop"></div>
 <aside class="reader" id="reader" role="dialog" aria-modal="true" aria-label="Reader" aria-hidden="true">
   <div class="reader-bar">

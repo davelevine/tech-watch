@@ -74,8 +74,8 @@ def test_feed_renders(browser):
     assert pg.locator("a.card").count() > 0
     assert pg.locator(".filter-btn").count() >= 2  # All + each category with stories
     assert pg.locator(".filter-btn", has_text="(0)").count() == 0
-    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text("footer #updated"))
-    assert pg.locator("header #updated").count() == 0
+    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text(".feed-status #updated"))
+    assert pg.locator("#end").is_hidden()  # not until the list runs out
     assert re.fullmatch(r"· \d+ stor(y|ies)( · \d+\+? min)?", pg.locator(".day-meta").first.inner_text())
     assert pg.locator(".card-arrow").count() == 0 and pg.locator(".card-time").count() == 0
     assert pg.locator(".weekly-why").first.inner_text() != ""
@@ -168,10 +168,11 @@ def stale_site(browser, hours, **context):
 
 def test_stale_band_appears_after_twelve_hours(browser):
     pg = stale_site(browser, 11, viewport={"width": 1300, "height": 900})
-    assert pg.locator("#stale").is_hidden()
+    assert pg.locator("#stale").is_hidden() and pg.locator("#updated").is_visible()
     pg = stale_site(browser, 14, viewport={"width": 1300, "height": 900})
     assert pg.locator("#stale").inner_text() == "Last updated 14h ago · the build may be stalled"
     assert pg.get_attribute("#stale", "href").endswith("/actions/workflows/build.yml")
+    assert pg.locator("#updated").is_hidden()  # one slot, two states
 
 
 def test_stale_band_keeps_the_filter_drawer_under_the_search_row(browser):
@@ -196,6 +197,49 @@ def test_day_minutes_show_only_when_every_story_has_one(browser):
     pg.goto(URL)
     pg.wait_for_selector("a.card")
     assert pg.locator(".day-meta").all_inner_texts()[:2] == ["· 2 stories · 7 min", "· 1 story"]
+
+
+def test_end_of_feed_message(browser):
+    pg = open_site(browser, viewport={"width": 1300, "height": 900})
+    end = pg.locator("#end")
+    # Scrolling loads every page, then the message appears.
+    for _ in range(40):
+        if end.is_visible():
+            break
+        pg.mouse.wheel(0, 3000)
+        pg.wait_for_timeout(100)
+    assert pg.inner_text("#end-msg") == "That\u2019s everything from the last 90 days."
+    assert end.locator("a[href='/rss.xml']").count() == 1 and end.locator("a[href*='github.com']").count() == 1
+    # It respects what's on screen.
+    pg.evaluate("window.scrollTo({top:0,behavior:'instant'})")
+    pg.click("#filters .filter-btn[data-f='security']")
+    pg.wait_for_function("() => document.getElementById('end-msg').textContent.includes('Security') || document.getElementById('end').hidden")
+    for _ in range(40):
+        if end.is_visible():
+            break
+        pg.mouse.wheel(0, 3000)
+        pg.wait_for_timeout(100)
+    assert pg.inner_text("#end-msg") == "That\u2019s everything in Security."
+    pg.click("#filters .filter-btn[data-f='all']")
+    pg.fill("#search", "zzzz-no-such-story")
+    pg.wait_for_selector(".empty")
+    assert end.is_hidden()  # the empty state already says so
+    pg.fill("#search", "openai")
+    pg.wait_for_function("() => document.getElementById('end-msg').textContent.includes('matching')")
+    assert pg.inner_text("#end-msg") == "That\u2019s everything matching \u201copenai\u201d."
+    assert pg.problems == []
+
+
+def test_back_to_top_never_covers_the_end_links(browser):
+    pg = open_site(browser, viewport={"width": 412, "height": 520}, has_touch=True, is_mobile=True)
+    for _ in range(60):
+        pg.evaluate("window.scrollTo({top: document.documentElement.scrollHeight, behavior: 'instant'})")
+        pg.wait_for_timeout(50)
+    pg.locator("#top").wait_for()
+    overlap = """() => { const t = document.getElementById('top').getBoundingClientRect();
+        return [...document.querySelectorAll('#end a')].map(a => a.getBoundingClientRect())
+            .some(r => r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top); }"""
+    assert pg.evaluate("!document.getElementById('end').hidden") and not pg.evaluate(overlap)
 
 
 def test_wide_screens_keep_the_filter_row(browser):
