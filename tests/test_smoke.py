@@ -258,6 +258,55 @@ def test_timestamp_shares_the_headings_baseline(browser):
     assert pg.locator("#updated").is_hidden() and pg.evaluate("document.querySelector('.weekly-title').getBoundingClientRect().height < 30")
 
 
+def held_reader(browser, **context):
+    """Opens the top essentials story with /api/read held, so the test decides when (and how) the fetch resolves."""
+    ctx = browser.new_context(**context)
+    pg = ctx.new_page()
+    held = []
+    ctx.route("**/api/read?*", lambda route: held.append(route))
+    pg.goto(URL)
+    pg.wait_for_selector(".weekly-card")
+    card = pg.locator(".weekly-card").first
+    title = card.locator(".weekly-card-title").text_content()
+    card.click()
+    return pg, held, title, pg.frame_locator("#reader-body iframe")
+
+
+def test_reader_shows_the_story_before_the_fetch_finishes(browser):
+    pg, held, title, frame = held_reader(browser, viewport={"width": 1300, "height": 900})
+    frame.locator("h1").wait_for()
+    assert frame.locator("h1").inner_text() == title
+    assert frame.locator(".todo b").inner_text().lower() == "what to do"
+    assert frame.locator(".status").inner_text() == "Loading the full article\u2026"
+    assert frame.locator("main > p").first.inner_text() != ""  # the summary
+    for _ in range(50):
+        if held:
+            break
+        pg.wait_for_timeout(20)
+    assert len(held) == 1  # still in flight: nothing above waited for it
+    url = urllib.parse.parse_qs(urllib.parse.urlsplit(held[0].request.url).query)["url"][0]
+    held[0].fulfill(content_type="application/json", body=json.dumps({"url": url, "frameable": False, "content": f"<p>{'word ' * 700}</p>"}))
+    pg.wait_for_function("() => document.getElementById('reader-source').textContent.includes('3 min read')")
+    frame.locator(".status").wait_for(state="detached")
+    assert frame.locator("h1").inner_text() == title and frame.locator(".todo").count() == 1
+
+
+def test_reader_keeps_the_card_when_the_article_is_blocked(browser):
+    pg, held, title, frame = held_reader(browser, viewport={"width": 412, "height": 800}, has_touch=True, is_mobile=True)
+    frame.locator("h1").wait_for()
+    for _ in range(50):
+        if held:
+            break
+        pg.wait_for_timeout(20)
+    url = urllib.parse.parse_qs(urllib.parse.urlsplit(held[0].request.url).query)["url"][0]
+    held[0].fulfill(content_type="application/json", body=json.dumps({"url": url, "frameable": False}))
+    frame.locator(".status", has_text="doesn\u2019t allow a reader view").wait_for()
+    assert frame.locator("h1").inner_text() == title and frame.locator(".todo").count() == 1
+    assert frame.locator("a.pill").get_attribute("href") == url
+    # Pinned to the top of the pane, not centred in it.
+    assert frame.locator("h1").bounding_box()["y"] < 120
+
+
 def test_wide_screens_keep_the_filter_row(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     assert pg.locator("#filter-toggle").is_hidden() and pg.locator("#filters .filter-btn").first.is_visible()
@@ -320,6 +369,7 @@ def test_reader_and_frame_relay_run_under_csp(browser):
     frame = pg.frame_locator("#reader-body iframe")
     assert frame.locator("h1").inner_text() == title
     assert frame.locator("h1 a").get_attribute("href") == card.get_attribute("href")
+    frame.locator("p").nth(29).wait_for()  # the card shows first, then the article replaces it
     assert frame.locator("p").count() == 30
     # Escape pressed inside the article only reaches the page through the frame's relay script,
     # so closing proves the CSP lets that hashed script run.
@@ -349,7 +399,7 @@ def test_swipe_back_on_a_phone(browser):
     pg.wait_for_timeout(300)
     card.tap()
     pg.wait_for_selector("#reader-body iframe")
-    pg.frame_locator("#reader-body iframe").locator("p").first.wait_for()
+    pg.frame_locator("#reader-body iframe").locator("p").nth(29).wait_for()  # the article, not the card before it
     # Wait for the slide-in to finish: until then the touch lands on the (inert) feed behind it.
     for _ in range(50):
         if pg.evaluate("new DOMMatrix(getComputedStyle(document.getElementById('reader')).transform).m41") == 0:

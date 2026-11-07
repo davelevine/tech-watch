@@ -241,24 +241,40 @@ function articleDoc(i, html, nonce, why, minutes) {
 <base target="_blank"><style>
 :root { ${frameVars('light')} } :root[data-theme="dark"] { ${frameVars('dark')} }
 body { transition: background-color .35s ease, color .35s ease; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 1.125rem/1.75 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
-main { max-width: 680px; margin: 0 auto; padding: 40px 24px 96px; }
-h1 a { color: inherit; text-decoration: none; } h1 a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
-.why { margin: -1.2em 0 2.4em; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--bg-card); font: .95rem/1.5 Inter, system-ui, sans-serif; }
-.why b { display: block; margin-bottom: 2px; color: var(--accent); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; }
-h1 { font-size: 2.1rem; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 .35em; }
-.src { margin-bottom: 2.4em; color: var(--accent); font: 600 .78rem/1 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
-h2, h3, h4 { line-height: 1.3; margin: 1.6em 0 .5em; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 1.0625rem/1.65 "Iowan Old Style", Charter, Georgia, serif; overflow-wrap: break-word; }
+main { max-width: 640px; margin: 0 auto; padding: 32px 24px 96px; }
 a { color: var(--accent); }
+h1 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin: 0 0 .4em; font-size: clamp(1.4rem, 1rem + 2vw, 1.75rem); font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
+h1 a { color: inherit; text-decoration: none; } h1 a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+.src { margin-bottom: 1.8em; color: var(--text-muted); font: 600 .8125rem/1.3 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
+.todo { margin: 0 0 1.8em; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--bg-card); }
+.todo b { display: block; margin-bottom: 2px; color: var(--accent); font: 700 .75rem/1.5 Inter, system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
+h2, h3, h4 { margin: 1.8em 0 .5em; font-weight: 700; line-height: 1.3; }
+h2 { font-size: 1.375rem; } h3 { font-size: 1.125rem; } h4 { font-size: 1rem; }
+ul, ol { padding-left: 1.4em; } li + li { margin-top: .35em; }
 img, video { max-width: 100%; height: auto; border-radius: 8px; }
-figure { margin: 1.6em 0; } figcaption { color: var(--text-muted); font-size: .85em; }
+figure { margin: 1.6em 0; } figcaption { margin-top: .4em; color: var(--text-muted); font-size: .85em; }
 blockquote { margin: 1.4em 0; padding-left: 1em; border-left: 3px solid var(--border-strong); color: var(--text-muted); }
-pre { overflow: auto; padding: 12px 14px; border-radius: 8px; background: var(--bg-card); font-size: .82em; line-height: 1.5; }
-code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .88em; }
-table { display: block; overflow: auto; border-collapse: collapse; font-size: .9em; } th, td { padding: 4px 8px; border: 1px solid var(--border); }
+code { padding: .1em .3em; border-radius: 4px; background: var(--bg-card); font: .875em ui-monospace, SFMono-Regular, Consolas, monospace; }
+pre { overflow-x: auto; padding: 12px 14px; border-radius: 8px; background: var(--bg-card); font: .8125rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; }
+pre code { padding: 0; background: none; font: inherit; }
+table { display: block; overflow-x: auto; border-collapse: collapse; font-size: .875rem; } th, td { padding: 4px 8px; border: 1px solid var(--border); } th { font-weight: 700; }
 hr { border: 0; border-top: 1px solid var(--border); }
-@media (max-width: 600px) { main { padding: 24px 18px 80px; } h1 { font-size: 1.6rem; } body { font-size: 1.0625rem; } }
-</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}${minutes ? ` · ${minutes} min read` : ''}</div>${why ? `<div class="why"><b>Why it matters</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
+.status { color: var(--text-muted); font: .9375rem/1.5 Inter, system-ui, sans-serif; }
+.pill { display: inline-block; padding: 10px 18px; border: 1px solid var(--accent); border-radius: 999px; font: 600 .9375rem/1.4 Inter, system-ui, sans-serif; text-decoration: none; }
+@media (max-width: 600px) { main { padding: 24px 18px 80px; } .pill { padding: 12px 18px; } }
+</style><script nonce="${nonce}">${SWIPE_REPORTER}<\/script></head><body><main><h1><a href="${esc(i.url)}" target="_blank" rel="noopener" title="Open the original">${esc(i.title)}</a></h1><div class="src">${esc(domain(i.url))}${minutes ? ` · ${minutes} min read` : ''}</div>${why ? `<div class="todo"><b>What to do</b>${esc(why)}</div>` : ''}${html}</main></body></html>`;
+}
+// What we already know about a story, from data.json: shown at once, and all that's left if the article can't be fetched.
+const storyCard = (i, status) => `${i.summary ? `<p>${esc(i.summary)}</p>` : ''}<p class="status">${status}</p>
+<a class="pill" href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a>`;
+// Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
+function showInReader(i, html, why, minutes) {
+  const frame = document.createElement('iframe');
+  frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
+  frame.title = i.title;
+  frame.srcdoc = articleDoc(i, html, crypto.randomUUID(), why, minutes);
+  $('reader-body').replaceChildren(frame);
 }
 
 // About 230 words a minute, the usual adult reading speed for this kind of text.
@@ -272,7 +288,7 @@ function openReader(i, { fromHash = false } = {}) {
   const why = weekly?.items?.find(p => p.url === i.url)?.why;
   $('reader-source').textContent = `${i.publisher} · ${domain(i.url)}`;
   $('reader-source').href = i.url;
-  $('reader-body').innerHTML = '<div class="reader-msg">Loading the article…</div>';
+  showInReader(i, storyCard(i, 'Loading the full article…'), why);  // before the fetch: the fetch can only upgrade this
   document.body.classList.add('reading');
   $('reader').setAttribute('aria-hidden', 'false');
   document.querySelectorAll('.feed, #top').forEach(el => { el.inert = true; });
@@ -282,24 +298,22 @@ function openReader(i, { fromHash = false } = {}) {
   if (fresh) $('reader-close').focus({ preventScroll: true });
   fetch('/api/read?url=' + encodeURIComponent(i.url), { cache: 'no-store' }).then(r => r.json()).then(r => {
     if (readerFor !== i.url) return;  // another article was opened meanwhile
-    const frame = document.createElement('iframe');
     if (r.content) {
-      // Scripts run only by nonce (the swipe reporter); without allow-same-origin the frame can't touch this page.
-      frame.sandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
       const minutes = readingMinutes(r.content);
-      frame.srcdoc = articleDoc(i, r.content, crypto.randomUUID(), why, minutes);
+      showInReader(i, r.content, why, minutes);
       $('reader-source').textContent += ` · ${minutes} min read`;
     } else if (r.frameable) {
+      const frame = document.createElement('iframe');
       frame.sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms';
       frame.referrerPolicy = 'no-referrer';
       frame.src = i.url;
+      frame.title = i.title;
+      $('reader-body').replaceChildren(frame);
       $('reader-source').textContent += ' · original page';
     } else throw new Error('unreadable');
-    frame.title = i.title;
-    $('reader-body').replaceChildren(frame);
   }).catch(() => {
     if (readerFor !== i.url) return;
-    $('reader-body').innerHTML = `<div class="reader-msg">${why ? `<p><b>Why it matters:</b> ${esc(why)}</p>` : ''}This site doesn’t allow a reader view.<a href="${esc(i.url)}" target="_blank" rel="noopener">Read it on ${esc(domain(i.url))}</a></div>`;
+    showInReader(i, storyCard(i, 'This publisher doesn\u2019t allow a reader view.'), why);
   });
 }
 function closeReader() {
