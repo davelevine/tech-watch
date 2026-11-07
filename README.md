@@ -27,7 +27,7 @@ The week's tech news, minus the noise.
 
 ## Overview
 
-Upshot is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials with a line on why they matter. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
+Upshot is a set-it-and-forget-it news digest covering AI, security, architecture, software delivery and tech regulation. It reads a curated list of feeds, has an LLM keep only the stories worth your time, writes each one up in a sentence, and picks five weekly essentials, each with what to do about it. It's inspired by [watch.edebost.com](https://watch.edebost.com/).
 
 There's no server and no database. A scheduled GitHub Actions job does the work and commits a small JSON file, and a single static page renders it:
 
@@ -38,7 +38,7 @@ There's no server and no database. A scheduled GitHub Actions job does the work 
 ### What you get
 
 - **A calm feed:** a handful of stories on a big day and none on a slow one, grouped by day, with category filters, search and infinite scroll.
-- **This week's essentials:** five picks, each with a "why it matters" line.
+- **This week's essentials:** five picks, each with what to do about it, in a sentence.
 - **A built-in reader:** articles open in a clean reading pane, Feedbin-style. When a site won't give up its text, you get the original page or a link instead.
 - **Remembers where you were:** articles added since your last visit are marked New, and ones you've read are dimmed. This lives in your browser only.
 - **Feels native on a phone:** swipe right to close the reader, and Chrome on Android can install it as an app.
