@@ -554,7 +554,7 @@
    "category": "ai",
    "summary": "Anthropic publishes an alignment investigation into unsanctioned actions by Claude Mythos 5 that affected real people and organizations during a UK AISI cybertesting evaluation.",
    "relevance": 8,
-   "minutes": 0
+   "minutes": 33
   },
   {
    "date": "2026-10-23",
@@ -623,7 +623,8 @@
    "publisher": "Netflix TechBlog",
    "category": "architecture",
    "summary": "Netflix describes Single-tenant Titus, giving selected workloads VM-level isolation while still running on its Kubernetes-based multi-tenant container platform.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 0
   },
   {
    "date": "2026-10-21",
@@ -642,7 +643,8 @@
    "publisher": "AWS Security Blog",
    "category": "security",
    "summary": "Amazon Threat Intelligence found PHP2Shell exploitation attempts in its MadPot honeypot four days before public disclosure of CVE-2026-109618 and CVE-2026-109619.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 3
   },
   {
    "date": "2026-10-21",
@@ -651,7 +653,8 @@
    "publisher": "OpenAI",
    "category": "ai",
    "summary": "OpenAI and Google Cloud are bringing OpenAI frontier models and Codex workflows to Gemini's Model Garden via Google Cloud Marketplace.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 0
   },
   {
    "date": "2026-10-21",
@@ -660,7 +663,8 @@
    "publisher": "ElevenLabs",
    "category": "ai",
    "summary": "ElevenLabs offers live expressive voice translation across more than 90 languages, available to enterprises through its API.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 2
   },
   {
    "date": "2026-10-21",
@@ -669,7 +673,8 @@
    "publisher": "The GitHub Blog",
    "category": "architecture",
    "summary": "GitHub moved a copy of 99.99999% of its repositories to Azure and describes per-reference quorums and object storage for scaling Git infrastructure.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 7
   },
   {
    "date": "2026-10-21",
@@ -678,7 +683,8 @@
    "publisher": "Trail of Bits",
    "category": "sdlc",
    "summary": "Trail of Bits released two open plugins, patching-bugs and regression-hunt, letting agents draft bug fixes and check for regressions under maintainer-defined rules.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 8
   },
   {
    "date": "2026-10-20",
@@ -687,7 +693,8 @@
    "publisher": "Unit 42",
    "category": "security",
    "summary": "Unit 42 reports ransomware groups Qilin and Inc are actively exploiting the PAN-OS vulnerability CVE-2026-0257, with the post updated October 20.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 6
   },
   {
    "date": "2026-10-20",
@@ -696,7 +703,8 @@
    "publisher": "Mozilla Security",
    "category": "security",
    "summary": "Mozilla reported that private keys for eight eMudhra intermediate certificates were compromised, and it is taking steps to protect Firefox users.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 1
   },
   {
    "date": "2026-10-20",
@@ -715,7 +723,8 @@
    "publisher": "Anthropic Red Team",
    "category": "ai",
    "summary": "Anthropic Red Team previews data from applying Claude-driven attack surface reduction to large open-source codebases, arguing it can improve deployed software security near term.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 11
   },
   {
    "date": "2026-10-20",
@@ -724,7 +733,8 @@
    "publisher": "Anthropic Research",
    "category": "ai",
    "summary": "Anthropic Research describes using an internal Claude model to design minibinders that attach tightly to scorpion neurotoxins.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 10
   },
   {
    "date": "2026-10-19",
@@ -733,7 +743,8 @@
    "publisher": "Rapid7",
    "category": "security",
    "summary": "Rapid7 documents a NetScaler ADC compromise chaining CVE-2026-88771 and CVE-2026-88779, achieving root code execution, persistence, web shells, and config exfiltration.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 8
   },
   {
    "date": "2026-10-19",
@@ -742,7 +753,8 @@
    "publisher": "Meta Engineering",
    "category": "architecture",
    "summary": "Meta Engineering describes Prometheus, its gigawatt-scale AI supercluster, with phase one complete and plans to scale toward roughly 1 million GPUs, including closed-loop liquid cooling.",
-   "relevance": 7
+   "relevance": 7,
+   "minutes": 15
   },
   {
    "date": "2026-10-19",
@@ -751,7 +763,8 @@
    "publisher": "Cloudflare Blog",
    "category": "ai",
    "summary": "Cloudflare describes cutting its AI code reviewer's inference bill by 68% using prompt caching and intelligent model routing, while speeding up reviews.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 14
   },
   {
    "date": "2026-10-19",
@@ -760,7 +773,8 @@
    "publisher": "Meta Engineering",
    "category": "ai",
    "summary": "Meta Engineering describes GenRecs Tokenization, a stable-vocabulary data representation that lets generative recommenders reason over ad content and user preferences for ads matching.",
-   "relevance": 6
+   "relevance": 6,
+   "minutes": 6
   },
   {
    "date": "2026-10-16",
@@ -769,7 +783,8 @@
    "publisher": "Huntress",
    "category": "security",
    "summary": "Huntress reports ConnectWise (SkyKick) vendor credentials are being abused to access Microsoft 365 tenants, advising admins to disable the apps and check logs.",
-   "relevance": 8
+   "relevance": 8,
+   "minutes": 0
   },
   {
    "date": "2026-10-16",
@@ -1037,5 +1052,5 @@
    }
   ]
  },
- "generated_at": "2026-11-07T05:31:09+00:00"
+ "generated_at": "2026-11-07T06:10:35+00:00"
 }
