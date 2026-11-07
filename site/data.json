@@ -45,17 +45,6 @@
   },
   {
    "date": "2026-11-06",
-   "title": "CEO-spoofing scammers used AI to help steal more than $100 million, feds say",
-   "url": "https://therecord.media/ceo-spoofing-scammers-charged",
-   "publisher": "The Record",
-   "category": "security",
-   "summary": "US prosecutors charged three suspects in Europe with using AI-assisted CEO impersonation to defraud victims of more than $100 million.",
-   "relevance": 8,
-   "added": "2026-11-06T15:04:21+00:00",
-   "minutes": 2
-  },
-  {
-   "date": "2026-11-06",
    "title": "QNAP says hackers breaching NAS devices in Plex2Shell attacks",
    "url": "https://www.bleepingcomputer.com/news/security/qnap-says-hackers-breaching-nas-devices-in-plex2shell-attacks/",
    "publisher": "BleepingComputer",
@@ -99,17 +88,6 @@
    "minutes": 0
   },
   {
-   "date": "2026-11-06",
-   "title": "EU accuses TikTok of trapping users in harmful ‘rabbit holes’",
-   "url": "https://therecord.media/eu-accuses-tiktok-of-rabbit-hole-DSA-violation",
-   "publisher": "The Record",
-   "category": "regulation",
-   "summary": "The European Commission accused TikTok of failing to stop its recommendation algorithm from drawing users into harmful content rabbit holes.",
-   "relevance": 7,
-   "added": "2026-11-06T13:18:38+00:00",
-   "minutes": 4
-  },
-  {
    "date": "2026-11-05",
    "title": "OpenSSH flaw lets attackers log into password-disabled Linux accounts",
    "url": "https://www.bleepingcomputer.com/news/security/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts/",
@@ -128,17 +106,6 @@
    "summary": "GitHub will block pull_request_target workflows by default starting December 2 as an Actions security hardening measure.",
    "relevance": 7,
    "minutes": 4
-  },
-  {
-   "date": "2026-11-05",
-   "title": "Social media giants sue California to overturn law shielding kids 15 and under from compulsive use",
-   "url": "https://therecord.media/social-media-giants-sue-california-over-social-media-law",
-   "publisher": "The Record",
-   "category": "regulation",
-   "summary": "Google, Meta and TikTok sued California in federal court to overturn a law barring psychologically exploitative features for users 15 and under.",
-   "relevance": 7,
-   "added": "2026-11-06T13:34:32+00:00",
-   "minutes": 1
   },
   {
    "date": "2026-11-04",
