@@ -29,7 +29,7 @@ FRESH_DAYS = int(os.environ.get("FRESH_DAYS", 3))  # ignore feed entries publish
 PER_FEED = int(os.environ.get("PER_FEED", 10))     # newest N entries per feed per run (caps huge feeds)
 # 1-10 relevance an item needs to be kept. The busy categories need more; the quieter ones score lower
 # even for good pieces (a strong architecture write-up rarely rates like an exploited zero-day).
-MIN_RELEVANCE = {"ai": 8, "security": 8, "architecture": 7, "sdlc": 7, "regulation": 7, "other": 7}
+MIN_RELEVANCE = {"ai": 8, "security": 8, "architecture": 7, "sdlc": 7, "regulation": 8, "other": 7}
 DEDUPE_DAYS = 7       # new items are checked for repeats of the last N days' headlines
 DAILY_MAX = 10        # safety cap for big news days; the relevance bar does the real filtering
 DEAD_AFTER_DAYS = 14  # a feed failing this long gets reported
