@@ -89,10 +89,9 @@ def test_phone_menu(browser):
     pg.keyboard.press("Escape")
     pg.locator("#theme").wait_for(state="hidden")  # after the closing fade
     # Tapping away closes the menu without opening the article underneath.
-    pg.locator("a.card").nth(1).scroll_into_view_if_needed()
+    pg.tap("#menu-btn")  # before measuring: playwright's tap may scroll the page to reach the button
     x, y = pg.evaluate("""() => { const r = [...document.querySelectorAll('a.card')].map(c => c.getBoundingClientRect())
         .find(r => r.bottom > 340 && r.top < innerHeight - 40); return [r.left + r.width / 2, Math.max(r.top, 300) + 20]; }""")  # below the drawer
-    pg.tap("#menu-btn")
     assert pg.evaluate("document.getElementById('menu').getBoundingClientRect().width") == 320  # full width
     pg.wait_for_timeout(300)
     pg.touchscreen.tap(x, y)
@@ -112,6 +111,36 @@ def test_animations_run_under_reduced_motion(browser):
     pg.wait_for_function("() => document.getElementById('menu').getAnimations().length > 0 || getComputedStyle(document.getElementById('menu')).clipPath.includes('-40px')")
     pg.evaluate("document.getElementById('theme').click()")
     pg.wait_for_function("() => document.getAnimations().some(a => a.effect.pseudoElement?.includes('view-transition'))")
+    assert pg.problems == []
+
+
+def test_phone_filter_drawer(browser):
+    pg = open_site(browser, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)
+    assert pg.locator("#filters .filter-btn").first.is_hidden() and pg.locator("#filter-label").inner_text() == ""
+    assert pg.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    pg.tap("#filter-toggle")
+    pg.wait_for_function("() => !document.getElementById('filters').getAnimations().length")
+    for chip in pg.locator("#filters .filter-btn").all():
+        assert chip.is_visible() and chip.bounding_box()["x"] + chip.bounding_box()["width"] <= 320  # all reachable, wrapped
+    assert pg.evaluate("Math.round(document.getElementById('filters').getBoundingClientRect().top) === Math.round(document.querySelector('.subheader').getBoundingClientRect().bottom)")
+    pg.tap("#filters .filter-btn[data-f='security']")
+    pg.locator("#filters .filter-btn").first.wait_for(state="hidden")
+    assert pg.locator("#filter-label").inner_text() == "Security"
+    assert pg.locator("#filter-toggle").get_attribute("aria-label") == "Filters: Security"
+    assert pg.locator(".card-cat").evaluate_all("els => els.every(e => e.textContent === 'Security')")
+    pg.tap("#filter-toggle")
+    pg.tap("#filters .filter-btn[data-f='all']")
+    pg.locator("#filters .filter-btn").first.wait_for(state="hidden")
+    assert pg.locator("#filter-label").inner_text() == ""
+    assert pg.problems == []
+
+
+def test_wide_screens_keep_the_filter_row(browser):
+    pg = open_site(browser, viewport={"width": 1300, "height": 900})
+    assert pg.locator("#filter-toggle").is_hidden() and pg.locator("#filters .filter-btn").first.is_visible()
+    pg.click("#filters .filter-btn[data-f='ai']")
+    assert pg.locator("#filters .filter-btn.active").get_attribute("data-f") == "ai"
+    assert pg.locator("#filters .filter-btn").first.is_visible()  # picking one leaves the row in place
     assert pg.problems == []
 
 
@@ -137,6 +166,10 @@ def test_wcag(browser, scheme):
     pg.wait_for_function("() => !document.getElementById('menu').getAnimations().length")  # let the drawer finish opening
     assert violations() == [] and pg.evaluate(small) == []
     assert pg.get_attribute("#theme", "aria-checked") == str(scheme == "dark").lower()
+    pg.keyboard.press("Escape")
+    pg.tap("#filter-toggle")
+    pg.wait_for_function("() => !document.getElementById('filters').getAnimations().length")
+    assert violations() == [] and pg.evaluate(small) == []
     assert pg.problems == []
 
 
