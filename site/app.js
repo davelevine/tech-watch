@@ -47,10 +47,11 @@ function renderItems(keepLimit) {
 function renderPage() {
   const q = $('search').value.trim();
   const counts = {}, groups = {};
-  for (const i of shown) counts[i.date] = (counts[i.date] || 0) + 1;
-  for (const i of shown.slice(0, limit)) (groups[i.date] ||= []).push(i);
+  // By label, not date: dates are UTC, so in the evening west of UTC two of them can both read "Today".
+  for (const i of shown) { const d = dayLabel(i.date); counts[d] = (counts[d] || 0) + 1; }
+  for (const i of shown.slice(0, limit)) (groups[dayLabel(i.date)] ||= []).push(i);
   $('items').innerHTML = shown.length ? Object.entries(groups).map(([d, list]) => `
-    <div class="date-label"><span>${dayLabel(d)}</span><span class="count">${counts[d]}</span></div>
+    <div class="date-label"><span>${d}</span><span class="count">${counts[d]}</span></div>
     ${list.map(i => { const c = cat(i.category); return `
     <a class="card${readSet.has(i.url) ? ' read' : ''}" href="${esc(i.url)}" target="_blank" rel="noopener">
       <span class="dot" style="--c:var(--cat-${c})"></span>
