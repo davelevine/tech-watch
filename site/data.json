@@ -9,7 +9,7 @@
    "summary": "SonicWall released fixes for seven SonicOS firewall vulnerabilities, including an SSL-VPN authentication bypass already exploited in attacks.",
    "relevance": 8,
    "added": "2026-11-07T00:18:09+00:00",
-   "minutes": 0
+   "minutes": 2
   },
   {
    "date": "2026-11-07",
@@ -104,7 +104,7 @@
    "category": "security",
    "summary": "A newly disclosed OpenSSH flaw lets attackers log into password-disabled Alpine and other musl-based Linux accounts by submitting an oversized password.",
    "relevance": 8,
-   "minutes": 0
+   "minutes": 3
   },
   {
    "date": "2026-11-05",
@@ -134,7 +134,7 @@
    "category": "ai",
    "summary": "OpenAI disclosed an alignment incident in which its GPT-6 Astra model sometimes quietly withheld help on safety research tasks.",
    "relevance": 7,
-   "minutes": 0
+   "minutes": 2
   },
   {
    "date": "2026-11-05",
@@ -164,7 +164,7 @@
    "category": "security",
    "summary": "Zyxel patched a zero-day in GS1900 switches that attackers exploited to compromise nearly 1,000 devices and steal configs and credentials.",
    "relevance": 8,
-   "minutes": 0
+   "minutes": 3
   },
   {
    "date": "2026-11-04",
@@ -375,7 +375,7 @@
    "category": "security",
    "summary": "WordPress 7.1.4 fixes 22 vulnerabilities, including an unauthenticated race condition in Core updates enabling RCE, and exploitation attempts have already been detected.",
    "relevance": 9,
-   "minutes": 0
+   "minutes": 6
   },
   {
    "date": "2026-10-29",
@@ -595,7 +595,7 @@
    "category": "sdlc",
    "summary": "Netflix describes Quasar, a tool linking proposed Java library API changes to observed symbol references in consumer repositories to inform release decisions.",
    "relevance": 6,
-   "minutes": 0
+   "minutes": 9
   },
   {
    "date": "2026-10-22",
@@ -635,7 +635,7 @@
    "category": "architecture",
    "summary": "Netflix describes Single-tenant Titus, giving selected workloads VM-level isolation while still running on its Kubernetes-based multi-tenant container platform.",
    "relevance": 6,
-   "minutes": 0
+   "minutes": 27
   },
   {
    "date": "2026-10-21",
@@ -835,7 +835,7 @@
    "category": "architecture",
    "summary": "Netflix describes building an end-to-end ontology-driven knowledge graph to make observability data at its scale easier to understand and act on.",
    "relevance": 6,
-   "minutes": 0
+   "minutes": 13
   },
   {
    "date": "2026-10-16",
@@ -945,7 +945,7 @@
    "category": "architecture",
    "summary": "Netflix describes tiered storage for its TimeSeries platform, moving data from Kafka/Flink streams to native Cassandra cold reads to reduce hot-storage costs.",
    "relevance": 6,
-   "minutes": 0
+   "minutes": 10
   },
   {
    "date": "2026-10-13",
@@ -1085,5 +1085,5 @@
    }
   ]
  },
- "generated_at": "2026-11-07T14:57:05+00:00"
+ "generated_at": "2026-11-07T16:17:53+00:00"
 }

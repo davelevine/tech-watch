@@ -1,6 +1,7 @@
 {
  "failing_since": {},
  "seen": {
+  "https://8rank.ai/game/apple-intelligence-personal-knowledge-graph": "2026-11-07",
   "https://about.fb.com/news/2026/10/introducing-whatsapp-guest-calling/": "2026-10-14",
   "https://about.fb.com/news/2026/10/lavenir-appartient-a-tous-meta-et-inca-sassocient-pour-soutenir-les-personnes-aveugles-sourdes-et-aveugles-ou-ayant-une-basse-vision-au-canada/": "2026-10-29",
   "https://about.fb.com/news/2026/10/meta-milans-pinacoteca-di-brera-and-essilorluxottica-expand-access-to-art-through-ai-glasses/": "2026-10-14",
@@ -402,6 +403,7 @@
   "https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf": "2026-10-16",
   "https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163": "2026-10-22",
   "https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60": "2026-10-14",
+  "https://nfsu2.xyz/": "2026-11-07",
   "https://openai.com/ads/customers/evernote": "2026-10-28",
   "https://openai.com/ads/customers/flipsnack": "2026-11-05",
   "https://openai.com/index/a-thousand-fewer-paths-to-root": "2026-11-04",
@@ -729,6 +731,7 @@
   "https://www.bleepingcomputer.com/news/security/ghostmap-android-flaw-lets-malicious-app-trigger-persistent-boot-loop/": "2026-11-05",
   "https://www.bleepingcomputer.com/news/security/google-calendar-phishing-campaign-hijacks-sessions-bypasses-mfa/": "2026-11-04",
   "https://www.bleepingcomputer.com/news/security/hackers-backdoor-linux-servers-using-trojanized-cwp-web-server/": "2026-11-05",
+  "https://www.bleepingcomputer.com/news/security/hackers-pull-off-133-million-french-bank-heist-via-service-provider/": "2026-11-07",
   "https://www.bleepingcomputer.com/news/security/imsi-vs-imei-what-your-phone-broadcasts-and-who-can-read-it/": "2026-11-06",
   "https://www.bleepingcomputer.com/news/security/metamask-says-recent-attack-didnt-affect-wallet-infrastructure/": "2026-11-06",
   "https://www.bleepingcomputer.com/news/security/msecure-password-manager-hack-prompts-password-reset-warnings/": "2026-11-04",
