@@ -1,8 +1,8 @@
 <!--markdownlint-disable-->
 
-[![Build](https://github.com/davelevine/triage/actions/workflows/build.yml/badge.svg)](https://github.com/davelevine/triage/actions/workflows/build.yml)
-[![Site](https://img.shields.io/badge/triage.levine.io-live-73dbcc?labelColor=2c3e50)](https://triage.levine.io)
-[![RSS](https://img.shields.io/badge/RSS-feed-ebb077?logo=rss&logoColor=ebb077&labelColor=2c3e50)](https://triage.levine.io/rss.xml)
+[![Build](https://github.com/davelevine/upshot/actions/workflows/build.yml/badge.svg)](https://github.com/davelevine/upshot/actions/workflows/build.yml)
+[![Site](https://img.shields.io/badge/upshot.levine.io-live-73dbcc?labelColor=2c3e50)](https://upshot.levine.io)
+[![RSS](https://img.shields.io/badge/RSS-feed-ebb077?logo=rss&logoColor=ebb077&labelColor=2c3e50)](https://upshot.levine.io/rss.xml)
 
 <div align="center">
 
@@ -158,7 +158,7 @@ curl -fsS -X POST \
   -H "Authorization: Bearer $GITHUB_DISPATCH_TOKEN" \
   -H "Accept: application/vnd.github+json" \
   -d '{"ref":"main"}' \
-  https://api.github.com/repos/<you>/triage/actions/workflows/build.yml/dispatches
+  https://api.github.com/repos/<you>/upshot/actions/workflows/build.yml/dispatches
 ```
 
 Leave the built-in schedule in place as a fallback; a duplicate run finds nothing new.
@@ -201,7 +201,7 @@ The knobs live at the top of [`build.py`](build.py):
 | `DEAD_AFTER_DAYS` | 14 | Days of failures before a feed is reported |
 | `UPSHOT_MODEL` | `claude-haiku-5-5` | Model used for scoring, repeats and the weekly picks (env). The build fails if the CLI answers with a different model |
 | `CLAUDE_BIN` | `claude` | Path to the Claude Code CLI (env) |
-| `SITE_URL` | `https://triage.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
+| `SITE_URL` | `https://upshot.levine.io` | The site's address, for RSS links and reading-time lookups (env; set as a repo variable in forks) |
 
 How often it runs is the `cron` line in [`build.yml`](.github/workflows/build.yml).
 
