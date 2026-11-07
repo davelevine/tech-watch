@@ -1,6 +1,16 @@
 {
  "items": [
   {
+   "date": "2026-11-07",
+   "title": "SonicWall warns of new SSL-VPN MFA bypass flaw exploited in attacks",
+   "url": "https://www.bleepingcomputer.com/news/security/sonicwall-warns-of-new-ssl-vpn-mfa-bypass-flaw-exploited-in-attacks/",
+   "publisher": "BleepingComputer",
+   "category": "security",
+   "summary": "SonicWall released fixes for seven SonicOS firewall vulnerabilities, including an SSL-VPN authentication bypass already exploited in attacks.",
+   "relevance": 8,
+   "added": "2026-11-07T00:18:09+00:00"
+  },
+  {
    "date": "2026-11-06",
    "title": "OpenAI Says New GPT-6 Cyber Model Hunts Flaws Without Crossing the Line",
    "url": "https://www.securityweek.com/openai-says-new-gpt-6-cyber-model-hunts-flaws-without-crossing-the-line/",
@@ -333,31 +343,31 @@
   }
  ],
  "weekly": {
-  "window_start": "2026-10-31",
-  "window_end": "2026-11-06",
-  "selected_on": "2026-11-06",
+  "window_start": "2026-11-01",
+  "window_end": "2026-11-07",
+  "selected_on": "2026-11-07",
   "items": [
    {
+    "url": "https://thehackernews.com/2026/11/hackers-exploited-openssh-sshole-flaw.html",
+    "why": "A public OpenSSH flaw (CVE-2026-123158, CVSS 8.1) was exploited within hours of disclosure, so check musl/PAM-disabled builds and patch now."
+   },
+   {
     "url": "https://thehackernews.com/2026/11/red-hat-patches-98-rated-linux-tcp-rce.html",
-    "why": "9.8-rated unauthenticated TCP RCE in Linux kernel; patch now, Ubuntu fixes still only in opt-in testing."
+    "why": "A remote, unauthenticated use-after-free in Linux IPv4 TCP rated 9.8 is patched by Red Hat, while Ubuntu fixes are still in opt-in testing."
    },
    {
-    "url": "https://thehackernews.com/2026/11/xen-hypervisor-flaws-let-one-malicious.html",
-    "why": "Xen guest-to-dom0 memory read/write with no mitigation; patch hypervisors immediately if you run multi-tenant VMs."
+    "url": "https://thehackernews.com/2026/11/chainalysis-breach-exposes-all-users.html",
+    "why": "Chainalysis says an agentic AI attack exposed credentials and live tokens for all users, forcing shutdown of two services; rotate any exposed access."
    },
    {
-    "url": "https://thehackernews.com/2026/11/debian-and-ubuntu-apt-flaw-lets-mitm.html",
-    "why": "APT MitM flaw lets attackers swap verified packages and run root code on Debian/Ubuntu fleets."
+    "url": "https://www.bleepingcomputer.com/news/security/sonicwall-warns-of-new-ssl-vpn-mfa-bypass-flaw-exploited-in-attacks/",
+    "why": "SonicWall patched seven SonicOS firewall flaws, including an SSL-VPN MFA bypass already exploited in the wild; patch edge VPN appliances immediately."
    },
    {
-    "url": "https://socket.dev/blog/github-to-block-pull-request-target",
-    "why": "Default block of pull_request_target on Dec 2 will break existing GitHub Actions workflows; audit and migrate now."
-   },
-   {
-    "url": "https://www.bleepingcomputer.com/news/security/zyxel-fixes-zero-day-exploited-to-hack-nearly-1-000-network-switches/",
-    "why": "Actively exploited Zyxel switch zero-day stole configs and credentials from ~1,000 devices; patch exposed gear."
+    "url": "https://socket.dev/blog/shai-hulud-descendant-malicious-ruby-gem",
+    "why": "A Shai-Hulud-descendant worm in a malicious Ruby gem steals credentials on install and poisons AI coding tools; audit installs, and be careful revoking GitHub tokens."
    }
   ]
  },
- "generated_at": "2026-11-06T23:51:59+00:00"
+ "generated_at": "2026-11-07T00:18:18+00:00"
 }
