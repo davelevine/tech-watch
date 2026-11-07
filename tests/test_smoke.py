@@ -74,7 +74,7 @@ def test_feed_renders(browser):
     assert pg.locator("a.card").count() > 0
     assert pg.locator(".filter-btn").count() >= 2  # All + each category with stories
     assert pg.locator(".filter-btn", has_text="(0)").count() == 0
-    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text(".feed-status #updated"))
+    assert re.fullmatch(r"Updated (just now|\d+[mhd] ago)", pg.inner_text(".weekly-header #updated"))
     assert pg.locator("#end").is_hidden()  # not until the list runs out
     assert re.fullmatch(r"· \d+ stor(y|ies)( · \d+\+? min)?", pg.locator(".day-meta").first.inner_text())
     assert pg.locator(".card-arrow").count() == 0 and pg.locator(".card-time").count() == 0
@@ -208,25 +208,26 @@ def test_end_of_feed_message(browser):
             break
         pg.mouse.wheel(0, 3000)
         pg.wait_for_timeout(100)
-    assert pg.inner_text("#end-msg") == "That\u2019s everything from the last 90 days."
+    assert re.fullmatch(r"That\u2019s all \d+ stories from the last \d+ days\.", pg.inner_text("#end-msg"))
     assert end.locator("a[href='/rss.xml']").count() == 1 and end.locator("a[href*='github.com']").count() == 1
     # It respects what's on screen.
     pg.evaluate("window.scrollTo({top:0,behavior:'instant'})")
     pg.click("#filters .filter-btn[data-f='security']")
     pg.wait_for_function("() => document.getElementById('end-msg').textContent.includes('Security') || document.getElementById('end').hidden")
+    security = pg.locator("#filters .filter-btn[data-f='security']").inner_text()
     for _ in range(40):
         if end.is_visible():
             break
         pg.mouse.wheel(0, 3000)
         pg.wait_for_timeout(100)
-    assert pg.inner_text("#end-msg") == "That\u2019s everything in Security."
+    assert pg.inner_text("#end-msg") == f"That\u2019s all {re.search(r'\d+', security).group()} Security stories."
     pg.click("#filters .filter-btn[data-f='all']")
     pg.fill("#search", "zzzz-no-such-story")
     pg.wait_for_selector(".empty")
     assert end.is_hidden()  # the empty state already says so
     pg.fill("#search", "openai")
     pg.wait_for_function("() => document.getElementById('end-msg').textContent.includes('matching')")
-    assert pg.inner_text("#end-msg") == "That\u2019s everything matching \u201copenai\u201d."
+    assert re.fullmatch(r"That\u2019s (all \d+ stories|the only story) matching \u201copenai\u201d\.", pg.inner_text("#end-msg"))
     assert pg.problems == []
 
 
@@ -240,6 +241,21 @@ def test_back_to_top_never_covers_the_end_links(browser):
         return [...document.querySelectorAll('#end a')].map(a => a.getBoundingClientRect())
             .some(r => r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top); }"""
     assert pg.evaluate("!document.getElementById('end').hidden") and not pg.evaluate(overlap)
+
+
+def test_timestamp_shares_the_headings_baseline(browser):
+    baseline = """() => { const box = s => { const r = document.createRange(); r.selectNodeContents(document.querySelector(s));
+            return r.getBoundingClientRect(); }, base = s => { const e = document.querySelector(s), m = document.createElement('span');
+            m.style.cssText = 'display:inline-block;width:0;height:0'; e.append(m); const y = m.getBoundingClientRect().bottom; m.remove(); return y; };
+        return [Math.abs(base('.weekly-title') - base('#updated')), document.documentElement.scrollWidth <= innerWidth,
+                box('.weekly-title').right <= box('#updated').left]; }"""
+    for width in (1300, 412, 411, 410, 375, 360, 340):
+        extra = {} if width > 640 else {"has_touch": True, "is_mobile": True}
+        pg = open_site(browser, viewport={"width": width, "height": 700}, **extra)
+        gap, fits, apart = pg.evaluate(baseline)
+        assert gap < 1 and fits and apart, width
+    pg = open_site(browser, viewport={"width": 320, "height": 700}, has_touch=True, is_mobile=True)  # too narrow for it
+    assert pg.locator("#updated").is_hidden() and pg.evaluate("document.querySelector('.weekly-title').getBoundingClientRect().height < 30")
 
 
 def test_wide_screens_keep_the_filter_row(browser):
