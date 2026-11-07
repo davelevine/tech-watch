@@ -1,7 +1,5 @@
 const CATS = { security: 'Security', ai: 'AI', architecture: 'Architecture', sdlc: 'SDLC', regulation: 'Regulation', other: 'Other' };
-const SHORT = { architecture: 'Arch' };
 const ORDER = ['ai', 'architecture', 'sdlc', 'security', 'regulation', 'other'];
-const ARROW = '<svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const cat = c => (c in CATS ? c : 'other');
@@ -29,9 +27,9 @@ function renderFilters() {
   const counts = {};
   for (const i of items) counts[cat(i.category)] = (counts[cat(i.category)] || 0) + 1;
   $('filters').innerHTML = [`<button class="filter-btn${filter === 'all' ? ' active' : ''}" data-f="all">All</button>`]
-    .concat(ORDER.map(c => `<button class="filter-btn${filter === c ? ' active' : ''}" data-f="${c}">` +
-      `<span class="dot" style="--c:var(--cat-${c})"></span>${SHORT[c] || CATS[c]} (${counts[c] || 0})</button>`)).join('');
-  const name = filter === 'all' ? '' : SHORT[filter] || CATS[filter];
+    .concat(ORDER.filter(c => counts[c] || filter === c).map(c => `<button class="filter-btn${filter === c ? ' active' : ''}" data-f="${c}">` +
+      `<span class="dot" style="--c:var(--cat-${c})"></span>${CATS[c]} (${counts[c] || 0})</button>`)).join('');
+  const name = filter === 'all' ? '' : CATS[filter];
   $('filter-label').textContent = name;  // a hidden filter must still show, or stories look missing
   $('filter-toggle').classList.toggle('active', !!name);
   $('filter-toggle').setAttribute('aria-label', name ? `Filters: ${name}` : 'Filters');
@@ -52,19 +50,25 @@ function renderPage() {
   const q = $('search').value.trim();
   const counts = {}, groups = {};
   // By label, not date: dates are UTC, so in the evening west of UTC two of them can both read "Today".
-  for (const i of shown) { const d = dayLabel(i.date); counts[d] = (counts[d] || 0) + 1; }
+  const minutes = {}, unknown = {};
+  for (const i of shown) {
+    const d = dayLabel(i.date);
+    counts[d] = (counts[d] || 0) + 1;
+    minutes[d] = (minutes[d] || 0) + (i.minutes || 0);
+    if (!i.minutes) unknown[d] = true;  // some sources block the reader, so the total is a floor
+  }
+  const dayMeta = d => `· ${counts[d]} ${counts[d] === 1 ? 'story' : 'stories'}${minutes[d] ? ` · ${minutes[d]}${unknown[d] ? '+' : ''} min` : ''}`;
   for (const i of shown.slice(0, limit)) (groups[dayLabel(i.date)] ||= []).push(i);
   $('items').innerHTML = shown.length ? Object.entries(groups).map(([d, list]) => `
-    <div class="date-label"><span>${d}</span><span class="count">${counts[d]}</span></div>
+    <div class="date-label"><span>${d}</span><span class="day-meta">${dayMeta(d)}</span></div>
     ${list.map(i => { const c = cat(i.category); return `
     <a class="card${readSet.has(i.url) ? ' read' : ''}" href="${esc(i.url)}" target="_blank" rel="noopener">
       <span class="dot" style="--c:var(--cat-${c})"></span>
       <div class="card-body">
         <div class="card-title">${highlight(i.title, q)}</div>
         ${i.summary ? `<p class="card-summary">${highlight(i.summary, q)}</p>` : ''}
-        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span>${i.minutes ? `<span>·</span><span class="card-time">${i.minutes} min read</span>` : ''}</div>
+        <div class="card-meta">${isNew(i) ? '<span class="new">New</span>' : ''}<span class="card-cat">${CATS[c]}</span><span>·</span><span class="card-url">${esc(domain(i.url))}</span></div>
       </div>
-      <span class="card-arrow">${ARROW}</span>
     </a>`; }).join('')}`).join('')
     : '<p class="empty">No articles match your search.</p>';
   $('items').removeAttribute('aria-busy');
@@ -77,10 +81,11 @@ function renderWeekly(weekly) {
   const picks = (weekly?.items || []).filter(p => byUrl[p.url]);
   if (!picks.length) { $('weekly').hidden = true; return; }  // the placeholder tiles go too
   $('rail').innerHTML = picks.map((p, n) => { const i = byUrl[p.url]; return `
-    <a class="weekly-card" href="${esc(i.url)}" target="_blank" rel="noopener" title="${esc(p.why)}">
+    <a class="weekly-card" href="${esc(i.url)}" target="_blank" rel="noopener">
       <div class="weekly-top"><span class="rank">${n + 1}</span>
         <span class="weekly-cat"><span class="dot" style="--c:var(--cat-${cat(i.category)})"></span>${CATS[cat(i.category)]}</span></div>
       <div class="weekly-card-title">${esc(i.title)}</div>
+      <p class="weekly-why">${esc(p.why)}</p>
       <div class="weekly-meta"><span class="weekly-source">${esc(i.publisher)}</span><span>· ${dayLabel(i.date)}</span></div>
     </a>`; }).join('');
   $('weekly').hidden = false;
@@ -95,7 +100,8 @@ function renderWeekly(weekly) {
 
 const syncThemeColor = () => {
   document.querySelector('meta[name="theme-color"]').setAttribute('content', css('--bg'));
-  $('theme').setAttribute('aria-checked', document.documentElement.dataset.theme === 'dark');
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  for (const b of [$('theme'), $('reader-theme')]) { b.setAttribute('aria-label', `Switch to ${next} mode`); b.title = `Switch to ${next} mode`; }
 };
 // Swap every color in one frame, then let a view transition crossfade the whole page; per-element
 // transitions would fade some parts and snap others.
