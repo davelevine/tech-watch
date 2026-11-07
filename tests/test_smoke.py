@@ -331,6 +331,18 @@ def test_reader_keeps_the_card_when_the_article_is_blocked(browser):
     assert frame.locator("h1").bounding_box()["y"] < 120
 
 
+def test_reader_message_follows_the_reason(browser):
+    pg, held, _, frame = held_reader(browser, viewport={"width": 1300, "height": 900})
+    frame.locator("h1").wait_for()
+    for _ in range(50):
+        if held:
+            break
+        pg.wait_for_timeout(20)
+    url = urllib.parse.parse_qs(urllib.parse.urlsplit(held[0].request.url).query)["url"][0]
+    held[0].fulfill(content_type="application/json", body=json.dumps({"url": url, "frameable": False, "reason": "not_html"}))
+    frame.locator(".status", has_text="needs the original site").wait_for()
+
+
 def test_wide_screens_keep_the_filter_row(browser):
     pg = open_site(browser, viewport={"width": 1300, "height": 900})
     assert pg.locator("#filter-toggle").is_hidden() and pg.locator("#filters .filter-btn").first.is_visible()

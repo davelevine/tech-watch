@@ -314,6 +314,12 @@ def feed_minutes(fetched):
     return out
 
 
+def full_text_feeds(fetched):
+    """{publisher: feed url} for feeds that publish whole articles. The reader falls back to these live when a page is blocked."""
+    return {res[0]: url for url, res in fetched.items()
+            if res and any(max([words_in(c.get("value")) for c in e.get("content", [])] + [words_in(e.get("summary"))]) >= MIN_ARTICLE_WORDS for e in res[1])}
+
+
 def page_words(url):
     """Words in a page's <article>, fetched directly: some sites block the reader's host but not this one. 0 if blocked,
     or if there's no <article> to tell the story from the page around it."""
@@ -343,10 +349,12 @@ def add_reading_times(items, known=None, limit=30):
         url = f"{SITE_URL}/api/read?url={urllib.parse.quote(item['url'], safe='')}"
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": BROWSER_UA}), timeout=30) as resp:
-                content = json.loads(resp.read()).get("content")
+                res = json.loads(resp.read())
         except Exception:  # not live yet, or a transient failure: try again next run
             return item, None
-        words = words_in(content) or page_words(item["url"])
+        if res.get("reason") in ("timeout", "error"):  # the same: leave it for next run rather than recording a 0
+            return item, None
+        words = words_in(res.get("content")) or page_words(item["url"])
         return item, max(1, round(words / WORDS_PER_MINUTE)) if words else 0
 
     with ThreadPoolExecutor(6) as ex:
@@ -485,6 +493,7 @@ def main():
     SITE.mkdir(exist_ok=True)
     data_path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
     (SITE / "rss.xml").write_text(rss(data["items"]))
+    (SITE / "feeds.json").write_text(json.dumps(full_text_feeds(fetched), indent=1, sort_keys=True) + "\n")
     STATE.write_text(json.dumps(state, indent=1, sort_keys=True) + "\n")
     (ROOT / "dead-feeds.txt").write_text("".join(f"{u}\n" for u in dead))
 

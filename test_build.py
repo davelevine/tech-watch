@@ -168,6 +168,21 @@ def test_feed_minutes_ignores_teasers():
     assert build.feed_minutes(fetched) == {"https://x.test/full": 3, "https://x.test/summary": 3}
 
 
+def test_reading_times_leave_transient_failures_for_next_run(monkeypatch):
+    import io
+    monkeypatch.setattr(build.urllib.request, "urlopen", lambda *a, **k: io.BytesIO(json.dumps({"reason": "timeout"}).encode()))
+    items = [{"url": "https://x.test/a"}]
+    build.add_reading_times(items)
+    assert "minutes" not in items[0]  # not recorded as unreadable
+
+
+def test_full_text_feeds_lists_only_feeds_with_whole_articles():
+    long = "word " * 400
+    fetched = {"https://full.test/rss": ("Full", [{"link": "a", "summary": "short"}, {"link": "b", "content": [{"value": long}]}]),
+               "https://teaser.test/rss": ("Teaser", [{"link": "c", "summary": "short"}]), "https://dead.test/rss": None}
+    assert build.full_text_feeds(fetched) == {"Full": "https://full.test/rss"}
+
+
 def test_page_words_needs_an_article_and_real_length(monkeypatch):
     import io
     body = {}

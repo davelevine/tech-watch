@@ -65,6 +65,8 @@ Everything older than 90 days is pruned, so the data stays small. It also looks 
 Opening an article calls `/api/read`, a Cloudflare Pages Function that fetches the page and extracts it with Mozilla's [Readability](https://github.com/mozilla/readability), the same approach as Firefox's reader view.
 
 - **Nothing is stored or cached.** Responses are `no-store`, and the text exists only for as long as you're reading it.
+- **It says why when it can't.** Every response carries a reason: `ok`, `challenge` (the publisher blocks it), `shell`, `short`, `not_html`, `timeout` or `error`. Your screen already shows the story's summary from `data.json`, so a block never leaves it empty.
+- **Some blocked publishers still work.** If a publisher's feed carries whole articles, the reader fetches the article from the feed instead, live, so that's not stored either. `site/feeds.json` lists those feeds; it's written by the build, and holds no article text.
 - **It isn't an open proxy.** Only URLs that are already on the site are fetched.
 - **The page can't run anything from the source site.** Extracted HTML is stripped of scripts, frames, styles and event handlers on the server. It's then rendered in a sandboxed frame with no access to the page; the only script allowed in there is the site's own swipe and keyboard relay, admitted by a per-render nonce.
 - **A strict Content-Security-Policy backs all of this up.** Scripts load only from the site itself, plus two inline scripts allowed by exact hash; no plugins, forms or base-URL changes; network requests go only to the site. A test keeps the hashes in step with the code.

@@ -308,6 +308,7 @@ function openReader(i, { fromHash = false } = {}) {
   else if (fresh) { history.pushState({ reader: true }, '', readHash(i.url)); readerPushed = true; }
   else history.replaceState({ reader: true }, '', readHash(i.url));
   if (fresh) $('reader-close').focus({ preventScroll: true });
+  let unreadable = 'This publisher doesn\u2019t allow a reader view.';
   fetch('/api/read?url=' + encodeURIComponent(i.url), { cache: 'no-store' }).then(r => r.json()).then(r => {
     if (readerFor !== i.url) return;  // another article was opened meanwhile
     if (r.content) {
@@ -322,10 +323,13 @@ function openReader(i, { fromHash = false } = {}) {
       frame.title = i.title;
       mountFrame(frame);
       $('reader-source').textContent += ' · original page';
-    } else throw new Error('unreadable');
+    } else {
+      if (['shell', 'short', 'not_html'].includes(r.reason)) unreadable = 'This page needs the original site to display.';
+      throw new Error(r.reason);
+    }
   }).catch(() => {
     if (readerFor !== i.url) return;
-    showInReader(i, storyCard(i, 'This publisher doesn\u2019t allow a reader view.'), why);
+    showInReader(i, storyCard(i, unreadable), why);
   });
 }
 function closeReader() {
