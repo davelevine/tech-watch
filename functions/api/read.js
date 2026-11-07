@@ -59,7 +59,7 @@ export async function onRequestGet({ request, env }) {
   const url = new URL(request.url).searchParams.get('url');
   // Only articles that are on the site, so this can't be used as an open proxy.
   const data = await (await env.ASSETS.fetch(new URL('/data.json', request.url))).json();
-  if (!url || !data.items.some(i => i.url === url)) return json({ error: 'not a Triage article' }, 404);
+  if (!url || !data.items.some(i => i.url === url)) return json({ error: 'not an Upshot article' }, 404);
 
   let res;
   try {
