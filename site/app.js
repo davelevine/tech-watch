@@ -325,6 +325,7 @@ function openReader(i, { fromHash = false } = {}) {
       $('reader-source').textContent += ' · original page';
     } else {
       if (['shell', 'short', 'not_html'].includes(r.reason)) unreadable = 'This page needs the original site to display.';
+      if (r.reason === 'timeout') unreadable = 'This publisher took too long to respond.';
       throw new Error(r.reason);
     }
   }).catch(() => {
